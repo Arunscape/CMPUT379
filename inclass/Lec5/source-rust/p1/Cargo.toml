@@ -1,5 +1,5 @@
 [package]
-name = "source-rust"
+name = "p1"
 version = "0.1.0"
 authors = ["Arunscape <8227297+Arunscape@users.noreply.github.com>"]
 edition = "2018"

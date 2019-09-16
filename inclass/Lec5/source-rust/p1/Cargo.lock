@@ -33,7 +33,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "source-rust"
+name = "p1"
 version = "0.1.0"
 dependencies = [
  "nix 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
