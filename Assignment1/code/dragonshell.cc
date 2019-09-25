@@ -1,3 +1,10 @@
+#define DEBUG
+#ifdef DEBUG
+#  define debug(x) x
+#else
+#  define debug(x)
+#endif // DEBUG
+
 #include <vector>
 #include <string>
 #include <cstring>
@@ -55,6 +62,13 @@ int main(int argc, char **argv) {
   // tokenize the input, run the command(s), and print the result
   // do this in a loop
 	print_welcome_message();
+
+  debug(printf("hello"));
+
+  for(;;){
+    
+    break;
+  }
 
   return 0;
 }
