@@ -28,5 +28,5 @@ leak:
 		 --log-file=valgrind-out.txt \
 		 ./dragonshell
 
-# format:
-#     clang-format *.c
+format:
+	clang-format -i *.c

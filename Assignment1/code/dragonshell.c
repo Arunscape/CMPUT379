@@ -18,15 +18,27 @@
  * @param argv - A char* array that will contain the tokenized strings
  * Make sure that you allocate enough space for the array.
  */
-void tokenize(char *str, const char *delim, char **argv) {
+char **tokenize(char *str, const char *delim) {
+
+  int len = strlen(str);
+  int num_of_spaces = 0;
+  for (int i = 0; i < len; i++) {
+    if (strcmp(str[i], ' ') == 0) {
+      num_of_spaces += 1;
+    }
+  }
+
+  char **tokens = malloc((num_of_spaces + 1) * sizeof(char *));
   char *token;
   token = strtok(str, delim);
   size_t i;
   for (i = 0; token != NULL; ++i) {
-    argv[i] = token;
+    tokens[i] = token;
     token = strtok(NULL, delim);
   }
-  argv[i] = NULL;
+  tokens[i] = NULL;
+
+  return tokens;
 }
 
 int main(int argc, char **argv) {
@@ -45,13 +57,14 @@ int main(int argc, char **argv) {
 
     getline(&buffer, &buffer_size, stdin);
 
-    char **tokens =
-        malloc(64 * sizeof(char *)); // could dynamically allocate it
+    // char **tokens =
+    //     malloc(64 * sizeof(char *)); // dragonshell will have a limit of 64
+    //     commands
 
-    tokenize(buffer, " ", tokens);
+    char **tokens = tokenize(buffer, " ");
 
-    do_commands(tokens);
-    // printf("%d", tokens[2]);
+    fprintf("%s", tokens[0]);
+    // do_commands(tokens);
 
     free(buffer);
     free(tokens);
