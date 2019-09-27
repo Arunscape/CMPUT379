@@ -1,28 +1,28 @@
 #define _GNU_SOURCE
 #include <stddef.h>
-#include <string.h>
 #include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
-#include "welcome.h"
 #include "commands.h"
+#include "welcome.h"
 
 // #define BUFFER_SIZE 32;
 
 /**
- * @brief Tokenize a C string 
- * 
- * @param str - The C string to tokenize 
- * @param delim - The C string containing delimiter character(s) 
+ * @brief Tokenize a C string
+ *
+ * @param str - The C string to tokenize
+ * @param delim - The C string containing delimiter character(s)
  * @param argv - A char* array that will contain the tokenized strings
  * Make sure that you allocate enough space for the array.
  */
-void tokenize(char* str, const char* delim, char ** argv) {
-  char* token;
+void tokenize(char *str, const char *delim, char **argv) {
+  char *token;
   token = strtok(str, delim);
   size_t i;
-  for(i = 0; token != NULL; ++i){
+  for (i = 0; token != NULL; ++i) {
     argv[i] = token;
     token = strtok(NULL, delim);
   }
@@ -45,18 +45,18 @@ int main(int argc, char **argv) {
 
     getline(&buffer, &buffer_size, stdin);
 
-    char **tokens = malloc(64 * sizeof(char*)); // could dynamically allocate it
+    char **tokens =
+        malloc(64 * sizeof(char *)); // could dynamically allocate it
 
     tokenize(buffer, " ", tokens);
-    
+
     do_commands(tokens);
     // printf("%d", tokens[2]);
 
     free(buffer);
     free(tokens);
     break;
-    
   }
-  
+
   return 0;
 }
