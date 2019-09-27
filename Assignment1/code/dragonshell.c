@@ -8,8 +8,6 @@
 #include "commands.h"
 #include "welcome.h"
 
-// #define BUFFER_SIZE 32;
-
 /**
  * @brief Tokenize a C string
  *
@@ -20,17 +18,16 @@
  */
 char **tokenize(char *str, const char *delim) {
 
-  int len = strlen(str);
-  int num_of_spaces = 0;
-  for (int i = 0; i < len; i++) {
-    if (strcmp(str[i], ' ') == 0) {
-      num_of_spaces += 1;
+  int num_of_delim = 0;
+  for (int i = 0; i < strlen(str); i++) {
+    if (strncmp(str[i], delim, 0) == 0){
+      num_of_delim += 1;
     }
   }
+  
+  char **tokens = malloc((num_of_delim + 1 ) * sizeof(char *));
+  char *token = strtok(str, delim);
 
-  char **tokens = malloc((num_of_spaces + 1) * sizeof(char *));
-  char *token;
-  token = strtok(str, delim);
   size_t i;
   for (i = 0; token != NULL; ++i) {
     tokens[i] = token;
@@ -54,17 +51,13 @@ int main(int argc, char **argv) {
 
     char *buffer = NULL;
     size_t buffer_size = 0;
-
     getline(&buffer, &buffer_size, stdin);
 
     // char **tokens =
-    //     malloc(64 * sizeof(char *)); // dragonshell will have a limit of 64
-    //     commands
+    //     malloc(64 * sizeof(char *)); // could dynamically allocate it
 
     char **tokens = tokenize(buffer, " ");
-
-    fprintf("%s", tokens[0]);
-    // do_commands(tokens);
+    // do_commands(idk);
 
     free(buffer);
     free(tokens);
