@@ -1,10 +1,14 @@
+#define _GNU_SOURCE
 #include <stddef.h>
 #include <string.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
 
-#include "dragon.h"
+#include "welcome.h"
+#include "commands.h"
 
-#define BUFFER_SIZE 32;
+// #define BUFFER_SIZE 32;
 
 /**
  * @brief Tokenize a C string 
@@ -17,10 +21,12 @@
 void tokenize(char* str, const char* delim, char ** argv) {
   char* token;
   token = strtok(str, delim);
-  for(size_t i = 0; token != NULL; ++i){
+  size_t i;
+  for(i = 0; token != NULL; ++i){
     argv[i] = token;
-  token = strtok(NULL, delim);
+    token = strtok(NULL, delim);
   }
+  argv[i] = NULL;
 }
 
 int main(int argc, char **argv) {
@@ -28,40 +34,29 @@ int main(int argc, char **argv) {
   // tokenize the input, run the command(s), and print the result
   // do this in a loop
 
-  // printDragon();
+  printDragon();
 
   for (;;) {
 
-    char* buffer;
-    size_t buffer_size = BUFFER_SIZE;
+    printf("🐲dragonshell🐉> ");
 
-     if( (buffer = malloc(sizeof(char))) == NULL) {
-        printf("😭 Couldn't allocate memory");
-        exit(1);
-    }
-    size_t characters = getline(&buffer, &buffer_size, stdin);
+    char *buffer = NULL;
+    size_t buffer_size = 0;
 
-    printf(buffer);
+    getline(&buffer, &buffer_size, stdin);
+
+    char **tokens = malloc(64 * sizeof(char*)); // could dynamically allocate it
+
+    tokenize(buffer, " ", tokens);
+    
+    do_commands(tokens);
+    // printf("%d", tokens[2]);
+
+    free(buffer);
+    free(tokens);
     break;
     
   }
   
   return 0;
 }
-
-
-
-// int main(void) {
-//     char *line = NULL;
-//     size_t len = 0;
-//     ssize_t read = 0;
-//     while (read != -1) {
-//         puts("enter a line");
-//         read = getline(&line, &len, stdin);
-//         printf("line = %s", line);
-//         printf("line length = %zu\n", read);
-//         puts("");
-//     }
-//     free(line);
-//     return 0;
-// }
