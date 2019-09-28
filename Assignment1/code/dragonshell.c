@@ -5,6 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "array.h"
 #include "commands.h"
 #include "welcome.h"
 
@@ -20,12 +21,12 @@ char **tokenize(char *str, const char *delim) {
 
   int num_of_delim = 0;
   for (int i = 0; i < strlen(str); i++) {
-    if (strncmp(str[i], delim, 0) == 0){
+    if (strncmp(str[i], delim, 0) == 0) {
       num_of_delim += 1;
     }
   }
-  
-  char **tokens = malloc((num_of_delim + 1 ) * sizeof(char *));
+
+  char **tokens = malloc((num_of_delim + 1) * sizeof(char *));
   char *token = strtok(str, delim);
 
   size_t i;
