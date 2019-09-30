@@ -1,15 +1,15 @@
 #include "array.h"
-const size_t DEFAULT_CAPACITY = 1024;
+const size_t DEFAULT_CAPACITY = 8;
 
 void push_to_array(struct array *array, void *item)
 {
-  if (array->item_size >= array->capacity)
+  if (array->size >= array->capacity)
   {
     array->array_ptr =
         realloc(array->array_ptr, array->item_size * array->capacity * 2);
     array->capacity *= 2;
   }
-  memcpy(array->array_ptr + array->size * array->item_size, item,
+  memcpy(array->array_ptr + (array->size * array->item_size), item,
          array->item_size);
   array->size += 1;
 }

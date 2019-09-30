@@ -9,20 +9,13 @@
 #include "commands.h"
 #include "welcome.h"
 
-/**
- * @brief Tokenize a C string
- *
- * @param str - The C string to tokenize
- * @param delim - The C string containing delimiter character(s)
- * @param argv - A char* array that will contain the tokenized strings
- * Make sure that you allocate enough space for the array.
- */
+// tokenize function modified to work with the custom c array
 void tokenize(char *str, const char *delim, struct array *array)
 {
   char *token = strtok(str, delim);
   for (size_t i = 0; token != NULL; i += 1)
   {
-    push_to_array(array, token);
+    push_to_array(array, &token);
     token = strtok(NULL, delim);
   }
 }
@@ -40,17 +33,18 @@ int main(int argc, char **argv)
     size_t buffer_size = 0;
     getline(&buffer, &buffer_size, stdin);
 
-    struct array tokens = create_array(64);
-    tokenize(buffer, " ", &tokens);
+    struct array tokens = create_array(sizeof(char *));
+    tokenize(buffer, " ", &tokens); // &mut
     // do_commands(idk);
 
     for (int i = 0; i < tokens.size; i++)
     {
-      printf("%s\n", get_from_array(&tokens, i));
+      printf("%s\n", *((char **)get_from_array(&tokens, i)));
     }
 
     free(buffer);
-    // free(tokens);
+    free(tokens.array_ptr);
+    exit(0);
     break;
   }
 

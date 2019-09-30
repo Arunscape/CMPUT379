@@ -25,8 +25,8 @@ leak: all
 		 --show-leak-kinds=all \
 		 --track-origins=yes \
 		 --verbose \
-		 --log-file=valgrind-out.txt \
 		 ./dragonshell
+		#  --log-file=valgrind-out.txt \
 
 format:
 	clang-format -i *.c *.h
