@@ -28,11 +28,12 @@ int main(int argc, char **argv)
   for (;;)
   {
 
-    printf("🐲dragonshell🐉> ");
+    printf("🐲 dragonshell🐉 > ");
 
     char *buffer = NULL;
     size_t buffer_size = 0;
     getline(&buffer, &buffer_size, stdin);
+    strtok(buffer, "\n"); // get rid of \n at the end of the line
 
     struct array tokens = create_array(sizeof(char *));
     tokenize(buffer, " ", &tokens); // &mut
@@ -42,10 +43,8 @@ int main(int argc, char **argv)
     // {
     //   printf("%s\n", *((char **)get_from_array(&tokens, i)));
     // }
-
     free(buffer);
     free(tokens.array_ptr);
-    break;
   }
 
   return 0;

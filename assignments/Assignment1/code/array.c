@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include "array.h"
 const size_t DEFAULT_CAPACITY = 8;
 

@@ -4,5 +4,5 @@
 
 void printDragon()
 {
-  printf(welcome_dragon);
+  printf("%s", welcome_dragon);
 }
