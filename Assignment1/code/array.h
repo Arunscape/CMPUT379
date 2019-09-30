@@ -1,17 +1,18 @@
-#ifndef ARRAY_H_  /* Include guard */
+#ifndef ARRAY_H_
 #define ARRAY_H_
 #include <stdlib.h>
 
-struct array{
+struct array
+{
     size_t size;
     size_t capacity;
-    void* array_ptr;
+    void *array_ptr;
     size_t item_size;
 };
 
-void push_to_array(struct array* array, void* item, size_t item_size);
+void push_to_array(struct array *array, void *item);
 
-void* get(const struct array *array, size_t index);
+void *get_from_array(const struct array *array, size_t index);
 
 struct array create_array(size_t item_size);
 

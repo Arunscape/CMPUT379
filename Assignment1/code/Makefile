@@ -1,6 +1,6 @@
 CC = clang
 CFLAGS = -Wall -g
-SOURCES = $(wildcard *.c) welcome_dragon.c
+SOURCES = $(wildcard *.c)
 OBJECTS = $(SOURCES:%.c=%.o)
 
 .PHONY: all clean test
@@ -8,12 +8,12 @@ OBJECTS = $(SOURCES:%.c=%.o)
 all: dragonshell
 
 clean:
-	rm *.o dragonshell valgrind-out.txt
+	rm -f *.o dragonshell valgrind-out.txt welcome_dragon.h
 
 %.o: %.c
 	${CC} ${CFLAGS} -c $< -o $@
  
-dragonshell: $(OBJECTS)
+dragonshell: welcome_dragon.h $(OBJECTS)
 	$(CC) -o dragonshell $(OBJECTS)
 
 test: leak
@@ -29,7 +29,7 @@ leak: all
 		 ./dragonshell
 
 format:
-	clang-format -i *.c
+	clang-format -i *.c *.h
 
-#welcome_dragon.c:
-#	xxd -i welcome_dragon
+welcome_dragon.h:
+	xxd -i welcome_dragon > welcome_dragon.h
