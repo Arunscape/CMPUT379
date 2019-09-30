@@ -10,6 +10,7 @@
 #include "welcome.h"
 
 // tokenize function modified to work with the custom c array
+// we're storing pointers to the char** strings in the array
 void tokenize(char *str, const char *delim, struct array *array)
 {
   char *token = strtok(str, delim);
@@ -35,16 +36,15 @@ int main(int argc, char **argv)
 
     struct array tokens = create_array(sizeof(char *));
     tokenize(buffer, " ", &tokens); // &mut
-    // do_commands(idk);
+    do_commands(&tokens);
 
-    for (int i = 0; i < tokens.size; i++)
-    {
-      printf("%s\n", *((char **)get_from_array(&tokens, i)));
-    }
+    // for (int i = 0; i < tokens.size; i++)
+    // {
+    //   printf("%s\n", *((char **)get_from_array(&tokens, i)));
+    // }
 
     free(buffer);
     free(tokens.array_ptr);
-    exit(0);
     break;
   }
 
