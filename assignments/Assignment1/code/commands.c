@@ -76,10 +76,11 @@ void do_commands(struct array *tokens, struct globals *GLOBALS)
       return;
     }
     char *new_path = malloc(strlen(GLOBALS->PATH) + strlen(strchr(*((char **)get_from_array(tokens, 1)), (int)":") - 1) + 1);
-
-    strcat(new_path, GLOBALS->PATH);
+    strcpy(new_path, GLOBALS->PATH);
     strcat(new_path, strchr(*((char **)get_from_array(tokens, 1)), (int)":") - 1);
     fprintf(stdout, "%s\n", new_path);
+    free(new_path);
+    // free(GLOBALS.path)
   }
   else
   {
