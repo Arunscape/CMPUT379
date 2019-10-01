@@ -75,6 +75,7 @@ void do_commands(struct array *tokens, struct globals *GLOBALS)
       fprintf(stderr, "Incorrect syntax for 2nd arg in a2path. It should start with $PATH: and then have a path to add.\nFor example: a2path $PATH:/usr/local/bin\n");
       return;
     }
+    // in the future, use strtok and asprintf LOL
     char *new_path = malloc(strlen(GLOBALS->PATH) + strlen(strchr(*((char **)get_from_array(tokens, 1)), (int)":") - 1) + 1);
     strcpy(new_path, GLOBALS->PATH);
     strcat(new_path, strchr(*((char **)get_from_array(tokens, 1)), (int)":") - 1);
