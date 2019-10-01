@@ -15,4 +15,6 @@ void *get_from_array(const struct array *array, size_t index);
 
 struct array create_array(size_t item_size);
 
+void free_array(struct array *array);
+
 #endif // ARRAY_H_

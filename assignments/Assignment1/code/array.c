@@ -33,3 +33,8 @@ struct array create_array(size_t item_size)
 
   };
 }
+
+void free_array(struct array *array)
+{
+  free(array->array_ptr);
+}

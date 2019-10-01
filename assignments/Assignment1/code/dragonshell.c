@@ -13,9 +13,16 @@
 
 int main(int argc, char **argv)
 {
+  // struct globals GLOBALS = {
+  //     .PATH = (char *)"/bin/:/usr/bin",
+  //     .EXIT = 0,
+  // };
+
   struct globals GLOBALS = {
-      .PATH = "/bin/:/usr/bin",
+      .PATH = malloc(15 * sizeof(char)),
+      .EXIT = 0,
   };
+  strcpy(GLOBALS.PATH, "/bin/:/usr/bin");
   printDragon();
 
   for (;;)
@@ -32,9 +39,17 @@ int main(int argc, char **argv)
     tokenize(buffer, " ", &tokens); // &mut tokens
     do_commands(&tokens, &GLOBALS); // &mut GLOBALS
 
-    free(buffer);
-    free(tokens.array_ptr);
+    if (GLOBALS.EXIT)
+    {
+      free(buffer);
+      free_array(&tokens);
+      // free(tokens.array_ptr);
+      free(GLOBALS.PATH);
+      break;
+      // _exit(0);
+      // exit(0);
+    }
   }
-
   return 0;
+  _exit(0);
 }

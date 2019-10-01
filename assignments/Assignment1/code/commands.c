@@ -78,9 +78,17 @@ void do_commands(struct array *tokens, struct globals *GLOBALS)
     char *new_path = malloc(strlen(GLOBALS->PATH) + strlen(strchr(*((char **)get_from_array(tokens, 1)), (int)":") - 1) + 1);
     strcpy(new_path, GLOBALS->PATH);
     strcat(new_path, strchr(*((char **)get_from_array(tokens, 1)), (int)":") - 1);
-    fprintf(stdout, "%s\n", new_path);
-    free(new_path);
-    // free(GLOBALS.path)
+    free(GLOBALS->PATH);
+    GLOBALS->PATH = new_path;
+  }
+  else if ((strcmp(*((char **)get_from_array(tokens, 0)), "exit")) == 0)
+  {
+    if (tokens->size > 1)
+    {
+      fprintf(stderr, "Expected 0 args for exit\n");
+      return;
+    }
+    GLOBALS->EXIT = true;
   }
   else
   {
