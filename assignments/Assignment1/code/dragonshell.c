@@ -8,21 +8,14 @@
 #include "array.h"
 #include "commands.h"
 #include "welcome.h"
-
-// tokenize function modified to work with the custom c array
-// we're storing pointers to the char** strings in the array
-void tokenize(char *str, const char *delim, struct array *array)
-{
-  char *token = strtok(str, delim);
-  for (size_t i = 0; token != NULL; i += 1)
-  {
-    push_to_array(array, &token);
-    token = strtok(NULL, delim);
-  }
-}
+#include "util.h"
+#include "globals.h"
 
 int main(int argc, char **argv)
 {
+  struct globals GLOBALS = {
+      .PATH = "/bin/:/usr/bin",
+  };
   printDragon();
 
   for (;;)
@@ -37,12 +30,8 @@ int main(int argc, char **argv)
 
     struct array tokens = create_array(sizeof(char *));
     tokenize(buffer, " ", &tokens); // &mut
-    do_commands(&tokens);
+    do_commands(&tokens, &GLOBALS);
 
-    // for (int i = 0; i < tokens.size; i++)
-    // {
-    //   printf("%s\n", *((char **)get_from_array(&tokens, i)));
-    // }
     free(buffer);
     free(tokens.array_ptr);
   }

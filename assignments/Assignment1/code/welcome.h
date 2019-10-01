@@ -1,4 +1,4 @@
-#ifndef WELCOME_H_ /* Include guard */
+#ifndef WELCOME_H_
 #define WELCOME_H_
 
 void printDragon();
