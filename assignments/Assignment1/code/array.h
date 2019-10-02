@@ -1,12 +1,11 @@
 #ifndef ARRAY_H_
 #define ARRAY_H_
 
-struct array
-{
-    size_t size;
-    size_t capacity;
-    void *array_ptr;
-    size_t item_size;
+struct array {
+  size_t size;
+  size_t capacity;
+  void *array_ptr;
+  size_t item_size;
 };
 
 void push_to_array(struct array *array, void *item);

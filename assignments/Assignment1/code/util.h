@@ -3,4 +3,4 @@
 
 void tokenize(char *str, const char *delim, struct array *array);
 
-#endif //UTIL_H_
+#endif // UTIL_H_

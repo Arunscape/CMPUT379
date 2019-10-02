@@ -2,9 +2,8 @@
 #define GLOBALS_H_
 #include <stdbool.h>
 
-struct globals
-{
-    char *PATH;
-    bool EXIT;
+struct globals {
+  char *PATH;
+  bool EXIT;
 };
-#endif //GLOBALS_H_
+#endif // GLOBALS_H_

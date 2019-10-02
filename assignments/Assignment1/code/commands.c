@@ -1,11 +1,11 @@
 #define _POSIX_C_SOURCE 1
 #define _GNU_SOURCE
 
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <limits.h>
 
 #include "array.h"
 #include "globals.h"
@@ -72,15 +72,23 @@ void do_commands(struct array *tokens, struct globals *GLOBALS)
       fprintf(stderr, "Expected 1 arg for a2path\n");
       return;
     }
-    else if (strlen(*((char **)get_from_array(tokens, 1))) < 7 || strncmp(*((char **)get_from_array(tokens, 1)), "$PATH:", 6) != 0)
+    else if (strlen(*((char **)get_from_array(tokens, 1))) < 7 ||
+             strncmp(*((char **)get_from_array(tokens, 1)), "$PATH:", 6) !=
+                 0)
     {
-      fprintf(stderr, "Incorrect syntax for 2nd arg in a2path. It should start with $PATH: and then have a path to add.\nFor example: a2path $PATH:/usr/local/bin\n");
+      fprintf(stderr, "Incorrect syntax for 2nd arg in a2path. It should start "
+                      "with $PATH: and then have a path to add.\nFor example: "
+                      "a2path $PATH:/usr/local/bin\n");
       return;
     }
     // in the future, use strtok and asprintf LOL
-    char *new_path = malloc(strlen(GLOBALS->PATH) + strlen(strchr(*((char **)get_from_array(tokens, 1)), (int)":") - 1) + 1);
+    char *new_path = malloc(
+        strlen(GLOBALS->PATH) +
+        strlen(strchr(*((char **)get_from_array(tokens, 1)), (int)":") - 1) +
+        1);
     strcpy(new_path, GLOBALS->PATH);
-    strcat(new_path, strchr(*((char **)get_from_array(tokens, 1)), (int)":") - 1);
+    strcat(new_path,
+           strchr(*((char **)get_from_array(tokens, 1)), (int)":") - 1);
     free(GLOBALS->PATH);
     GLOBALS->PATH = new_path;
   }
@@ -109,15 +117,15 @@ void attempt_evaluate_from_path(struct array *tokens, struct globals *GLOBALS)
 
   for (int i = 0; i < paths.size; i += 1)
   {
-    // TODO figure out how to replace the pointer in the array of pointers to point to the new string
+    // printf("%s\n\n", *(void **)get_from_array(&paths, i));
+    // TODO figure out how to replace the pointer in the array of pointers to
+    // point to the new string
     char *concat = NULL;
-    asprintf(&concat, "%s%s", *(void **)get_from_array(&paths, i), *(void **)get_from_array(tokens, 0));
-    // void *temp = get_from_array(&paths, i);
+    asprintf(&concat, "%s/%s", *(void **)get_from_array(&paths, i),
+             *(void **)get_from_array(tokens, 0));
+
     *(char **)get_from_array(&paths, i) = concat;
-    // free(temp);
-    fprintf(stdout, "%s\n", *(void **)get_from_array(&paths, i));
   }
-  free(path_copy);
 
   for (int i = 0; i < paths.size; i += 1)
   {
@@ -137,5 +145,10 @@ void attempt_evaluate_from_path(struct array *tokens, struct globals *GLOBALS)
   //   {
   //     execve("/bin/ls", argv, envp);
   //   }
+  for (int i = 0; i < paths.size; i += 1)
+  {
+    free(*(void **)get_from_array(&paths, i));
+  }
   free(paths.array_ptr);
+  free(path_copy);
 }
