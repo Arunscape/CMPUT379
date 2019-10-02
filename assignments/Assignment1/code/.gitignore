@@ -1,3 +1,4 @@
 *.out
 dragonshell
 valgrind-out.txt
+welcome_dragon.h

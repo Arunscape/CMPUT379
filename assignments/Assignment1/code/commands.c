@@ -115,40 +115,52 @@ void attempt_evaluate_from_path(struct array *tokens, struct globals *GLOBALS)
 
   tokenize(path_copy, ":", &paths); // &mut paths
 
+  // next time, loop over strtok
   for (int i = 0; i < paths.size; i += 1)
   {
-    // printf("%s\n\n", *(void **)get_from_array(&paths, i));
-    // TODO figure out how to replace the pointer in the array of pointers to
-    // point to the new string
     char *concat = NULL;
-    asprintf(&concat, "%s/%s", *(void **)get_from_array(&paths, i),
-             *(void **)get_from_array(tokens, 0));
+    asprintf(&concat, "%s/%s", *(char **)get_from_array(&paths, i),
+             *(char **)get_from_array(tokens, 0));
 
     *(char **)get_from_array(&paths, i) = concat;
   }
+  char *cwd = getcwd(NULL, PATH_MAX);
+  char *concat = NULL;
+  asprintf(&concat, "%s/%s", cwd, *(char **)get_from_array(tokens, 0));
+  free(cwd);
+  push_to_array(&paths, &concat);
 
   for (int i = 0; i < paths.size; i += 1)
   {
-    fprintf(stdout, "%s\n", *(void **)get_from_array(&paths, i));
+    fprintf(stdout, "%s\n", *(char **)get_from_array(&paths, i));
   }
 
-  //   __pid_t f = fork();
-  //   // char *argv[] = {"ls", "-al", NULL};
-  //   char *envp[] = {"some", "environment", NULL};
-  //   if (f)
-  //   {
-  //    if (access(filename, F_OK|X_OK) == 0)
-  // {
-  // }
-  //   }
-  //   else
-  //   {
-  //     execve("/bin/ls", argv, envp);
-  //   }
+  // char *nullpointer = NULL;
+  // push_to_array(&tokens, &nullpointer);
+  __pid_t f = fork();
+  if (!f) //child
+  {
+    for (int i = 0; i < paths.size; i += 1)
+    {
+
+      if (access(*(char **)get_from_array(&paths, i), F_OK | X_OK) == 0)
+      {
+        execve(*(char **)get_from_array(&paths, i), tokens->array_ptr, NULL);
+      }
+
+      else
+      {
+      }
+    }
+  }
+  wait(f);
+
+  // cleanup
   for (int i = 0; i < paths.size; i += 1)
   {
     free(*(void **)get_from_array(&paths, i));
   }
   free(paths.array_ptr);
   free(path_copy);
+  // free(concat);
 }
