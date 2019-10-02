@@ -1,4 +1,5 @@
 #define _POSIX_C_SOURCE 1
+#define _GNU_SOURCE
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,6 +9,7 @@
 
 #include "array.h"
 #include "globals.h"
+#include "util.h"
 
 void attempt_evaluate_from_path();
 
@@ -93,22 +95,47 @@ void do_commands(struct array *tokens, struct globals *GLOBALS)
   }
   else
   {
-    attempt_evaluate_from_path();
+    attempt_evaluate_from_path(tokens, GLOBALS);
   }
 }
 
-void attempt_evaluate_from_path()
+void attempt_evaluate_from_path(struct array *tokens, struct globals *GLOBALS)
 {
-  __pid_t f = fork();
-  char *argv[] = {"ls", "-al", NULL};
-  char *envp[] = {"some", "environment", NULL};
-  if (f)
+
+  struct array paths = create_array(sizeof(char *));
+  char *path_copy = strdup(GLOBALS->PATH);
+
+  tokenize(path_copy, ":", &paths); // &mut paths
+
+  for (int i = 0; i < paths.size; i += 1)
   {
-    // wait();
-    // execve("/bin/ls", argv, envp);
+    // TODO figure out how to replace the pointer in the array of pointers to point to the new string
+    char *concat = NULL;
+    asprintf(&concat, "%s%s", *(void **)get_from_array(&paths, i), *(void **)get_from_array(tokens, 0));
+    // void *temp = get_from_array(&paths, i);
+    *(char **)get_from_array(&paths, i) = concat;
+    // free(temp);
+    fprintf(stdout, "%s\n", *(void **)get_from_array(&paths, i));
   }
-  else
+  free(path_copy);
+
+  for (int i = 0; i < paths.size; i += 1)
   {
-    execve("/bin/ls", argv, envp);
+    fprintf(stdout, "%s\n", *(void **)get_from_array(&paths, i));
   }
+
+  //   __pid_t f = fork();
+  //   // char *argv[] = {"ls", "-al", NULL};
+  //   char *envp[] = {"some", "environment", NULL};
+  //   if (f)
+  //   {
+  //    if (access(filename, F_OK|X_OK) == 0)
+  // {
+  // }
+  //   }
+  //   else
+  //   {
+  //     execve("/bin/ls", argv, envp);
+  //   }
+  free(paths.array_ptr);
 }
