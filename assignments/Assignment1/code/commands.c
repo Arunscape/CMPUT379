@@ -14,9 +14,33 @@
 #include "globals.h"
 #include "util.h"
 
+void determine_what_to_do();
+void do_commands();
 void attempt_evaluate_from_path();
 
-void do_commands(struct array *tokens, struct globals *GLOBALS)
+void determine_what_to_do(struct array *tokens, struct globals *GLOBALS)
+{
+
+  bool io_redirection = false;
+  for (int i = 0; i < tokens->size; i += 1)
+  {
+    if (strcmp(*((char **)get_from_array(tokens, 0)), ">") == 0)
+    {
+      io_redirection = true;
+    }
+  }
+
+  if (false)
+  {
+    ;
+  }
+  else
+  { // normal stdin and stdout
+    do_commands(tokens, GLOBALS, stdin, stdout, stderr);
+  }
+}
+
+void do_commands(struct array *tokens, struct globals *GLOBALS, FILE *sin, FILE *sout, FILE *serr)
 {
 
   if (strcmp(*((char **)get_from_array(tokens, 0)), "cd") == 0)
