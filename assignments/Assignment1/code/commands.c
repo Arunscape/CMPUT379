@@ -7,6 +7,9 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <sys/types.h>
+#include <sys/wait.h>
+
 #include "array.h"
 #include "globals.h"
 #include "util.h"
@@ -130,16 +133,13 @@ void attempt_evaluate_from_path(struct array *tokens, struct globals *GLOBALS)
   free(cwd);
   push_to_array(&paths, &concat);
 
-  for (int i = 0; i < paths.size; i += 1)
-  {
-    fprintf(stdout, "%s\n", *(char **)get_from_array(&paths, i));
-  }
-
-  // char *nullpointer = NULL;
-  // push_to_array(&tokens, &nullpointer);
   __pid_t f = fork();
   if (!f) //child
   {
+    if (access(*(char **)get_from_array(tokens, 0), F_OK | X_OK) == 0)
+    { //attempt to execute the absolute path
+      execve(*(char **)get_from_array(tokens, 0), tokens->array_ptr, NULL);
+    }
     for (int i = 0; i < paths.size; i += 1)
     {
 
@@ -150,10 +150,11 @@ void attempt_evaluate_from_path(struct array *tokens, struct globals *GLOBALS)
 
       else
       {
+        ;
       }
     }
   }
-  wait(f);
+  wait(NULL); //wait for child process to terminate
 
   // cleanup
   for (int i = 0; i < paths.size; i += 1)
