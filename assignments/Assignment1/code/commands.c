@@ -46,7 +46,7 @@ void determine_what_to_do(struct globals *GLOBALS, char *buffer)
 
     struct array tokens = create_array(sizeof(char *));
     tokenize(first_semicolon_token, " ", &tokens); // &mut tokens
-    do_commands(&tokens, GLOBALS, stdin, fd, stderr);
+    do_commands(&tokens, GLOBALS, STDIN_FILENO, fd, STDOUT_FILENO);
     free(tokens.array_ptr);
     return;
   }
@@ -62,11 +62,11 @@ void determine_what_to_do(struct globals *GLOBALS, char *buffer)
   tokenize(first_semicolon_token, " ", &tokens); // &mut tokens
 
   // normal stdin and stdout
-  do_commands(&tokens, GLOBALS, stdin, STDOUT_FILENO, stderr);
+  do_commands(&tokens, GLOBALS, STDIN_FILENO, STDOUT_FILENO, STDERR_FILENO);
 
   while ((semicolon_token = strtok_r(NULL, ";", &semicolon_token_strtok_state)) != NULL)
   {
-    printf("Here's what got separated: %s\n", (char *)semicolon_token);
+    printf("Here's what got separated: %s\n", (char *)semicolon_token); //TODO delet this
     determine_what_to_do(GLOBALS, semicolon_token);
   }
   free(buffer_copy);
@@ -85,8 +85,8 @@ void determine_what_to_do(struct globals *GLOBALS, char *buffer)
   free(tokens.array_ptr);
 }
 
-void do_commands(struct array *tokens, struct globals *GLOBALS, FILE *sin,
-                 int sout, FILE *serr)
+void do_commands(struct array *tokens, struct globals *GLOBALS, int sin,
+                 int sout, int serr)
 {
 
   if (strcmp(*((char **)get_from_array(tokens, 0)), "cd") == 0)
@@ -180,7 +180,7 @@ void do_commands(struct array *tokens, struct globals *GLOBALS, FILE *sin,
   }
 }
 
-void attempt_evaluate_from_path(struct array *tokens, struct globals *GLOBALS, FILE *sin, int sout, FILE *serr)
+void attempt_evaluate_from_path(struct array *tokens, struct globals *GLOBALS, int sin, int sout, int serr)
 {
 
   struct array paths = create_array(sizeof(char *));
@@ -206,10 +206,22 @@ void attempt_evaluate_from_path(struct array *tokens, struct globals *GLOBALS, F
   __pid_t f = fork();
   if (!f) // child
   {
+    if (dup2(sin, STDIN_FILENO) == -1)
+    {
+      perror("dup2");
+      close(sin);
+      return;
+    }
     if (dup2(sout, STDOUT_FILENO) == -1)
     {
       perror("dup2");
       close(sout);
+      return;
+    }
+    if (dup2(serr, STDERR_FILENO) == -1)
+    {
+      perror("dup2");
+      close(serr);
       return;
     }
 
