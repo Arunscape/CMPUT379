@@ -33,7 +33,8 @@ void determine_what_to_do(struct globals *GLOBALS, char *buffer)
   char *buffer_copy2 = strdup(first_semicolon_token);
   char *redirect_token_strtok_state = NULL;
   char *redirect_token = strtok_r(buffer_copy2, ">", &redirect_token_strtok_state);
-  char *first_redirect_token = strdup(semicolon_token);
+  char *first_redirect_token = strdup(redirect_token);
+  char *buffer_copy3 = strdup(first_redirect_token); // actually, this is for pipe
   if ((redirect_token = strtok_r(NULL, ">", &redirect_token_strtok_state)) != NULL)
   {
     int fd = open(redirect_token, O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
@@ -46,15 +47,15 @@ void determine_what_to_do(struct globals *GLOBALS, char *buffer)
     struct array tokens = create_array(sizeof(char *));
     tokenize(first_semicolon_token, " ", &tokens); // &mut tokens
     do_commands(&tokens, GLOBALS, stdin, fd, stderr);
+    free(tokens.array_ptr);
     return;
   }
   // end redirection handling
 
   // begin pipe handling
-  // char *buffer_copy3 = strdup(first_redirect_token);
-  // char *pipe_token_strtok_state = NULL;
-  // char *pipe_token = strtok_r(buffer_copy3, "|", &pipe_token_strtok_state);
-  // char *first_pipe_token = strdup(semicolon_token);
+  char *pipe_token_strtok_state = NULL;
+  char *pipe_token = strtok_r(buffer_copy3, "|", &pipe_token_strtok_state);
+  char *first_pipe_token = strdup(pipe_token);
   // end pipe handling
 
   struct array tokens = create_array(sizeof(char *));
@@ -70,7 +71,7 @@ void determine_what_to_do(struct globals *GLOBALS, char *buffer)
   }
   free(buffer_copy);
   free(buffer_copy2);
-  // free(buffer_copy3);
+  free(buffer_copy3);
 
   free(first_semicolon_token);
   free(semicolon_token);
@@ -78,7 +79,7 @@ void determine_what_to_do(struct globals *GLOBALS, char *buffer)
   free(first_redirect_token);
   free(redirect_token);
 
-  // free(first_pipe_token);
+  free(first_pipe_token);
   // free(pipe_token);
 
   free(tokens.array_ptr);
