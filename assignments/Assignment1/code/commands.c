@@ -14,44 +14,41 @@
 #include "globals.h"
 #include "util.h"
 
-void determine_what_to_do();
 void do_commands();
 void attempt_evaluate_from_path();
 
 void determine_what_to_do(struct globals *GLOBALS, char *buffer)
 {
 
+  // begin semicolon handling
   char *buffer_copy = strdup(buffer);
   char *semicolon_token = strtok(buffer_copy, ";");
-
-  if (strcmp(buffer, semicolon_token) != 0)
+  char *buffer_copy2 = strdup(semicolon_token);
+  while ((semicolon_token = strtok(NULL, ";")) != NULL)
   {
+    printf("Here's what got separated: %s\n", (char *)semicolon_token);
     determine_what_to_do(GLOBALS, semicolon_token);
-    while ((semicolon_token = strtok(NULL, ";")) != NULL)
-    {
-      // printf("%s\n", semicolon_token);
-      determine_what_to_do(GLOBALS, semicolon_token);
-    }
-    printf("HELLO\n");
   }
 
-  free(buffer_copy); // TODO
+  // end semicolon handling
 
-  char *buffer_other_copy = strdup(buffer);
-  // printf("%s\n", buffer);
   struct array tokens = create_array(sizeof(char *));
-  tokenize(buffer_other_copy, " ", &tokens); // &mut tokens
+  tokenize(buffer_copy2, " ", &tokens); // &mut tokens
 
-  int index_of_redir = -1;
-  for (int i = 0; i < tokens.size; i += 1)
-  {
-    if (strcmp(*((char **)get_from_array(&tokens, 0)), ">") == 0)
-    {
-      index_of_redir = i;
-      break;
-    }
-  }
+  // // begin redirection handling
+  // int index_of_redir = -1;
+  // for (int i = 0; i < tokens.size; i += 1)
+  // {
+  //   if (strcmp(*((char **)get_from_array(&tokens, 0)), ">") == 0)
+  //   {
+  //     index_of_redir = i;
+  //     break;
+  //   }
+  // }
+  // // end redirection handling
 
+  // begin pipe handling
+  // end pipe handling
   if (false)
   {
     ;
@@ -61,7 +58,8 @@ void determine_what_to_do(struct globals *GLOBALS, char *buffer)
     do_commands(&tokens, GLOBALS, stdin, stdout, stderr);
   }
   free(tokens.array_ptr);
-  free(buffer_other_copy);
+  free(buffer_copy2);
+  free(semicolon_token);
 }
 
 void do_commands(struct array *tokens, struct globals *GLOBALS, FILE *sin, FILE *sout, FILE *serr)
