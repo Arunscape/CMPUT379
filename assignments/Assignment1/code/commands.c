@@ -18,15 +18,35 @@ void determine_what_to_do();
 void do_commands();
 void attempt_evaluate_from_path();
 
-void determine_what_to_do(struct array *tokens, struct globals *GLOBALS)
+void determine_what_to_do(struct globals *GLOBALS, char *buffer)
 {
 
-  bool io_redirection = false;
-  for (int i = 0; i < tokens->size; i += 1)
+  char *buffer_copy = strdup(buffer);
+
+  char *semicolon = strchr(buffer_copy, 0x3b);
+
+  char *semicolon_token = strtok(buffer_copy, ";");
+  determine_what_to_do(GLOBALS, buffer_copy);
+  while ((semicolon_token = strtok(NULL, ";")) != NULL)
   {
-    if (strcmp(*((char **)get_from_array(tokens, 0)), ">") == 0)
+    printf("%s\n", semicolon_token);
+    determine_what_to_do(GLOBALS, semicolon_token);
+  }
+
+  free(buffer_copy); // TODO
+
+  char *buffer_other_copy = strdup(buffer);
+  // printf("%s\n", buffer);
+  struct array tokens = create_array(sizeof(char *));
+  tokenize(buffer_other_copy, " ", &tokens); // &mut tokens
+
+  int index_of_redir = -1;
+  for (int i = 0; i < tokens.size; i += 1)
+  {
+    if (strcmp(*((char **)get_from_array(&tokens, 0)), ">") == 0)
     {
-      io_redirection = true;
+      index_of_redir = i;
+      break;
     }
   }
 
@@ -36,8 +56,10 @@ void determine_what_to_do(struct array *tokens, struct globals *GLOBALS)
   }
   else
   { // normal stdin and stdout
-    do_commands(tokens, GLOBALS, stdin, stdout, stderr);
+    do_commands(&tokens, GLOBALS, stdin, stdout, stderr);
   }
+  free(tokens.array_ptr);
+  free(buffer_other_copy);
 }
 
 void do_commands(struct array *tokens, struct globals *GLOBALS, FILE *sin, FILE *sout, FILE *serr)

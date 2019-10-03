@@ -28,20 +28,14 @@ int main(int argc, char **argv)
   for (;;)
   {
 
-    printf("🐲 dragonshell🐉 > ");
+    printf("\n🐲 dragonshell🐉 > ");
 
     char *buffer = NULL;
     size_t buffer_size = 0;
-    getline(&buffer, &buffer_size, stdin); // &mut buffer &mut buffer_size
-    strtok(buffer, "\n");                  // get rid of \n at the end of the line
-
-    struct array tokens = create_array(sizeof(char *));
-    tokenize(buffer, " ", &tokens);          // &mut tokens
-    determine_what_to_do(&tokens, &GLOBALS); // &mut *GLOBALS
-    // do_commands(&tokens, &GLOBALS); // &mut GLOBALS
-
+    getline(&buffer, &buffer_size, stdin);  // &mut buffer &mut buffer_size
+    strtok(buffer, "\n");                   // get rid of \n at the end of the line
+    determine_what_to_do(&GLOBALS, buffer); // &mut GLOBALS
     free(buffer);
-    free(tokens.array_ptr);
     if (GLOBALS.EXIT)
     {
       free(GLOBALS.PATH);
@@ -50,6 +44,6 @@ int main(int argc, char **argv)
       // exit(0);
     }
   }
-  return 0;
+  // return 0;
   _exit(0);
 }
