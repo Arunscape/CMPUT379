@@ -22,15 +22,17 @@ void determine_what_to_do(struct globals *GLOBALS, char *buffer)
 {
 
   char *buffer_copy = strdup(buffer);
-
-  char *semicolon = strchr(buffer_copy, 0x3b);
-
   char *semicolon_token = strtok(buffer_copy, ";");
-  determine_what_to_do(GLOBALS, buffer_copy);
-  while ((semicolon_token = strtok(NULL, ";")) != NULL)
+
+  if (strcmp(buffer, semicolon_token) != 0)
   {
-    printf("%s\n", semicolon_token);
     determine_what_to_do(GLOBALS, semicolon_token);
+    while ((semicolon_token = strtok(NULL, ";")) != NULL)
+    {
+      // printf("%s\n", semicolon_token);
+      determine_what_to_do(GLOBALS, semicolon_token);
+    }
+    printf("HELLO\n");
   }
 
   free(buffer_copy); // TODO
