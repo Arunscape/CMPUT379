@@ -5,10 +5,13 @@
 
 // tokenize function modified to work with the custom c array
 // we're storing pointers to the char** strings in the array
-void tokenize(char *str, const char *delim, struct array *array) {
-  char *token = strtok(str, delim);
-  for (size_t i = 0; token != NULL; i += 1) {
+void tokenize(char *str, const char *delim, struct array *array)
+{
+  char *token_state = NULL;
+  char *token = strtok_r(str, delim, &token_state);
+  for (size_t i = 0; token != NULL; i += 1)
+  {
     push_to_array(array, &token);
-    token = strtok(NULL, delim);
+    token = strtok_r(NULL, delim, &token_state);
   }
 }

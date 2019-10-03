@@ -9,6 +9,8 @@
 
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include "array.h"
 #include "globals.h"
@@ -25,34 +27,41 @@ void determine_what_to_do(struct globals *GLOBALS, char *buffer)
   char *semicolon_token_strtok_state = NULL;
   char *semicolon_token = strtok_r(buffer_copy, ";", &semicolon_token_strtok_state);
   char *first_semicolon_token = strdup(semicolon_token);
-
   // end semicolon handling
+
+  // begin redirection handling
+  char *buffer_copy2 = strdup(first_semicolon_token);
+  char *redirect_token_strtok_state = NULL;
+  char *redirect_token = strtok_r(buffer_copy2, ">", &redirect_token_strtok_state);
+  char *first_redirect_token = strdup(semicolon_token);
+  if ((redirect_token = strtok_r(NULL, ">", &redirect_token_strtok_state)) != NULL)
+  {
+    int fd = open(redirect_token, O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    if (fd == -1)
+    {
+      perror("open");
+      return;
+    }
+
+    struct array tokens = create_array(sizeof(char *));
+    tokenize(first_semicolon_token, " ", &tokens); // &mut tokens
+    do_commands(&tokens, GLOBALS, stdin, fd, stderr);
+    return;
+  }
+  // end redirection handling
+
+  // begin pipe handling
+  // char *buffer_copy3 = strdup(first_redirect_token);
+  // char *pipe_token_strtok_state = NULL;
+  // char *pipe_token = strtok_r(buffer_copy3, "|", &pipe_token_strtok_state);
+  // char *first_pipe_token = strdup(semicolon_token);
+  // end pipe handling
 
   struct array tokens = create_array(sizeof(char *));
   tokenize(first_semicolon_token, " ", &tokens); // &mut tokens
 
-  // // begin redirection handling
-  // int index_of_redir = -1;
-  // for (int i = 0; i < tokens.size; i += 1)
-  // {
-  //   if (strcmp(*((char **)get_from_array(&tokens, 0)), ">") == 0)
-  //   {
-  //     index_of_redir = i;
-  //     break;
-  //   }
-  // }
-  // // end redirection handling
-
-  // begin pipe handling
-  // end pipe handling
-  if (false)
-  {
-    ;
-  }
-  else
-  { // normal stdin and stdout
-    do_commands(&tokens, GLOBALS, stdin, stdout, stderr);
-  }
+  // normal stdin and stdout
+  do_commands(&tokens, GLOBALS, stdin, STDOUT_FILENO, stderr);
 
   while ((semicolon_token = strtok_r(NULL, ";", &semicolon_token_strtok_state)) != NULL)
   {
@@ -60,13 +69,23 @@ void determine_what_to_do(struct globals *GLOBALS, char *buffer)
     determine_what_to_do(GLOBALS, semicolon_token);
   }
   free(buffer_copy);
+  free(buffer_copy2);
+  // free(buffer_copy3);
+
   free(first_semicolon_token);
   free(semicolon_token);
+
+  free(first_redirect_token);
+  free(redirect_token);
+
+  // free(first_pipe_token);
+  // free(pipe_token);
+
   free(tokens.array_ptr);
 }
 
 void do_commands(struct array *tokens, struct globals *GLOBALS, FILE *sin,
-                 FILE *sout, FILE *serr)
+                 int sout, FILE *serr)
 {
 
   if (strcmp(*((char **)get_from_array(tokens, 0)), "cd") == 0)
@@ -156,11 +175,11 @@ void do_commands(struct array *tokens, struct globals *GLOBALS, FILE *sin,
   }
   else
   {
-    attempt_evaluate_from_path(tokens, GLOBALS);
+    attempt_evaluate_from_path(tokens, GLOBALS, sin, sout, serr);
   }
 }
 
-void attempt_evaluate_from_path(struct array *tokens, struct globals *GLOBALS)
+void attempt_evaluate_from_path(struct array *tokens, struct globals *GLOBALS, FILE *sin, int sout, FILE *serr)
 {
 
   struct array paths = create_array(sizeof(char *));
@@ -186,6 +205,13 @@ void attempt_evaluate_from_path(struct array *tokens, struct globals *GLOBALS)
   __pid_t f = fork();
   if (!f) // child
   {
+    if (dup2(sout, STDOUT_FILENO) == -1)
+    {
+      perror("dup2");
+      close(sout);
+      return;
+    }
+
     char *p = NULL;
     push_to_array(tokens, &p);
     if (access(*(char **)get_from_array(tokens, 0), F_OK | X_OK) ==
