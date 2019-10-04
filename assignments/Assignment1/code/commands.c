@@ -72,7 +72,8 @@ bool split_pipe_and_run(char *buffer)
     {
       perror("pipe failed");
     }
-    return false; // exit
+    // return false; // exit
+    return true;
   }
   bool ret = split_redirect_and_run(first_token, STDIN_FILENO, STDOUT_FILENO, -1);
   wait(NULL);

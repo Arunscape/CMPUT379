@@ -32,7 +32,7 @@ int main(int argc, char **argv)
     {
       if (feof(stdin))
       {
-        printf("HEY\n");
+        fprintf(stderr, "AAHHHHHHHHHH\n");
         break;
       }
       clearerr(stdin);
@@ -43,6 +43,7 @@ int main(int argc, char **argv)
     if (!run_line(buffer)) // run the line. if false is returned, exit
     {
       free(buffer);
+      fprintf(stderr, "REEEEEEEEEEEEEEEEEE");
       // TODO other cleanup
       break;
     };
