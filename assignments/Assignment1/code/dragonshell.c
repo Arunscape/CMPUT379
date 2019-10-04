@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <stdbool.h>
 
+#include <errno.h>
+
 #include "array.h"
 #include "commands.h"
 #include "util.h"
@@ -30,16 +32,16 @@ int main(int argc, char **argv)
     {
       if (feof(stdin))
       {
-        free(buffer);
+        printf("HEY\n");
         break;
       }
       clearerr(stdin);
       free(buffer);
       continue;
     };
-    strtok(buffer, "\n"); // get rid of \n at the end of the line
-    if (!run_line(buffer))
-    { // &mut buffer
+    strtok(buffer, "\n");  // get rid of \n at the end of the line
+    if (!run_line(buffer)) // run the line. if false is returned, exit
+    {
       free(buffer);
       // TODO other cleanup
       break;

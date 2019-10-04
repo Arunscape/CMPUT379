@@ -20,10 +20,10 @@
 
 bool split_semicolon_and_run(char *buffer);
 bool split_pipe_and_run(char *buffer);
-bool split_redirect_and_run(char *buffer, int sin, int sout);
-bool split_space_and_run(char *buffer, int sin, int sout);
+bool split_redirect_and_run(char *buffer, int sin, int sout, int close_me);
+bool split_space_and_run(char *buffer, int sin, int sout, int close_me);
 bool do_commands();
-void exec_from_path(struct array *tokens, int sin, int sout, char *path);
+void exec_from_path(struct array *tokens, int sin, int sout, char *path, int close_me);
 
 bool run_line(char *buffer)
 {
@@ -54,16 +54,18 @@ bool split_pipe_and_run(char *buffer)
     {
       printf("pipefd: %d, SOUT: %d\n", pipefd[0], pipefd[1]);
       fprintf(stderr, "BLIP\n");
-      split_redirect_and_run(first_token, STDIN_FILENO, pipefd[1]);
+      split_redirect_and_run(first_token, STDIN_FILENO, pipefd[1], pipefd[0]);
       fprintf(stderr, "BLIP\n");
-      split_redirect_and_run(second_token, pipefd[0], STDOUT_FILENO);
+      split_redirect_and_run(second_token, pipefd[0], STDOUT_FILENO, pipefd[1]);
       fprintf(stderr, "BLIP\n");
       wait(NULL);
       fprintf(stderr, "BLIP\n");
-      close(pipefd[0]);
+
       close(pipefd[1]);
+      close(pipefd[0]);
+
       fprintf(stderr, "BLIP\n");
-      wait(NULL);
+      wait(NULL); // TODO: IT GETS STUCK ON THIS BLIP UNTIL ^C
       fprintf(stderr, "BLIP\n");
     }
     else
@@ -72,12 +74,12 @@ bool split_pipe_and_run(char *buffer)
     }
     return false; // exit
   }
-  bool ret = split_redirect_and_run(first_token, STDIN_FILENO, STDOUT_FILENO);
+  bool ret = split_redirect_and_run(first_token, STDIN_FILENO, STDOUT_FILENO, -1);
   wait(NULL);
   return ret;
 }
 
-bool split_redirect_and_run(char *buffer, int sin, int sout)
+bool split_redirect_and_run(char *buffer, int sin, int sout, int close_me)
 {
   char *strtok_state = NULL;
   char *first_token = strtok_r(buffer, ">", &strtok_state);
@@ -97,20 +99,20 @@ bool split_redirect_and_run(char *buffer, int sin, int sout)
     }
     sout = fd;
   }
-  return split_space_and_run(first_token, sin, sout);
+  return split_space_and_run(first_token, sin, sout, close_me);
 }
 
-bool split_space_and_run(char *buffer, int sin, int sout)
+bool split_space_and_run(char *buffer, int sin, int sout, int close_me)
 {
   struct array tokens = create_array(sizeof(char *));
   tokenize(buffer, " ", &tokens);
   char *p = NULL;
   push_to_array(&tokens, &p);
-  return do_commands(&tokens, sin, sout);
+  return do_commands(&tokens, sin, sout, close_me);
 }
 
 bool do_commands(struct array *tokens, int sin,
-                 int sout)
+                 int sout, int close_me)
 {
   if (strcmp(*((char **)get_from_array(tokens, 0)), "cd") == 0)
   {
@@ -190,23 +192,25 @@ bool do_commands(struct array *tokens, int sin,
     }
     else
     {
-      exec_from_path(tokens, sin, sout, path);
+      exec_from_path(tokens, sin, sout, path, close_me);
     }
   }
   free(tokens->array_ptr);
   return true;
 }
 
-void exec_from_path(struct array *tokens, int sin, int sout, char *path)
+void exec_from_path(struct array *tokens, int sin, int sout, char *path, int close_me)
 {
   printf("SIN: %d, SOUT: %d\n", sin, sout);
   __pid_t f = fork();
   if (!f) // child
   {
+    close(close_me);
+    fprintf(stderr, "closed: %d\n", close_me);
     if (sin != STDIN_FILENO && dup2(sin, STDIN_FILENO) == -1)
     {
       perror("dup2");
-      close(sin);
+      close(sout);
       free(path);
       // free(tokens->array_ptr);
       return;
