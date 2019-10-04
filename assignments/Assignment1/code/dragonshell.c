@@ -4,21 +4,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 #include "array.h"
 #include "commands.h"
-#include "globals.h"
 #include "util.h"
 #include "welcome.h"
-
+#include "paths.h"
 int main(int argc, char **argv)
 {
 
-  struct globals GLOBALS = {
-      .PATH = malloc(15 * sizeof(char)),
-      .EXIT = false,
-  };
-  strcpy(GLOBALS.PATH, "/bin/:/usr/bin");
+  add_to_path("/bin/:/usr/bin");
+  handle_signals();
+
   printDragon();
 
   for (;;)
@@ -28,18 +26,23 @@ int main(int argc, char **argv)
 
     char *buffer = NULL;
     size_t buffer_size = 0;
-    getline(&buffer, &buffer_size, stdin);  // &mut buffer &mut buffer_size
-    strtok(buffer, "\n");                   // get rid of \n at the end of the line
-    determine_what_to_do(&GLOBALS, buffer); // &mut GLOBALS
-    free(buffer);
-    if (GLOBALS.EXIT)
+    if (getline(&buffer, &buffer_size, stdin) == -1)
     {
-      free(GLOBALS.PATH);
       break;
-      // _exit(0);
-      // exit(0);
+    }; // &mut buffer &mut buffer_size
+    strtok(buffer, "\n");
+    // get rid of \n at the end of the line
+    run_line(buffer); // &mut buffer
+    free(buffer);
+
+    // _exit(0);
+    // exit(0);
+    if (false)
+    {
+      free(buffer);
     }
   }
   // return 0;
+  cleanup_PATH();
   _exit(0);
 }

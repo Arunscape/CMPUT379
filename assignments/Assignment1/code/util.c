@@ -1,5 +1,7 @@
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
+#include <stdio.h>
 
 #include "array.h"
 
@@ -9,11 +11,36 @@ void tokenize(char *str, const char *delim, struct array *array)
 {
   char *token_state = NULL;
   char *token = strtok_r(str, delim, &token_state);
-  printf("token: %s *\n", token);
   for (size_t i = 0; token != NULL; i += 1)
   {
     push_to_array(array, &token);
     token = strtok_r(NULL, delim, &token_state);
-    printf("token: %s *\n", token);
   }
+}
+
+// void tok(char *str, const char *delim, char **argv)
+// {
+//   char *token;
+//   char *token_state = NULL;
+//   token = strtok_r(str, delim, &token_state);
+//   for (size_t i = 0; token != NULL; ++i)
+//   {
+//     argv[i] = token;
+//     token = strtok(NULL, delim);
+//   }
+// }
+
+void signal_callback_handler(int signum)
+{
+  printf("\n");
+}
+
+void handle_signals()
+{
+  struct sigaction sa;
+  sa.sa_flags = 0;
+  sigemptyset(&sa.sa_mask);
+  sa.sa_handler = signal_callback_handler;
+  sigaction(SIGINT, &sa, NULL);
+  sigaction(SIGTSTP, &sa, NULL);
 }

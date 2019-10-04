@@ -13,82 +13,105 @@
 #include <fcntl.h>
 
 #include "array.h"
-#include "globals.h"
 #include "util.h"
+#include "paths.h"
 
+void split_semicolon_and_run(char *buffer);
+void split_pipe_and_run(char *buffer);
+void split_redirect_and_run(char *buffer, int sin, int sout);
+void split_space_and_run(char *buffer, int sin, int sout);
 void do_commands();
-void attempt_evaluate_from_path();
+void exec_from_path(struct array *tokens, int sin, int sout, char *path);
 
-void determine_what_to_do(struct globals *GLOBALS, char *buffer)
+void run_line(char *buffer)
 {
-
-  // begin semicolon handling
-  char *buffer_copy = strdup(buffer);
-  char *semicolon_token_strtok_state = NULL;
-  char *semicolon_token = strtok_r(buffer_copy, ";", &semicolon_token_strtok_state);
-  char *first_semicolon_token = strdup(semicolon_token);
-  // end semicolon handling
-
-  // begin redirection handling
-  char *buffer_copy2 = strdup(first_semicolon_token);
-  char *redirect_token_strtok_state = NULL;
-  char *redirect_token = strtok_r(buffer_copy2, ">", &redirect_token_strtok_state);
-  char *first_redirect_token = strdup(redirect_token);
-  char *buffer_copy3 = strdup(first_redirect_token); // actually, this is for pipe
-  if ((redirect_token = strtok_r(NULL, ">", &redirect_token_strtok_state)) != NULL)
-  {
-    int fd = open(redirect_token, O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-    if (fd == -1)
-    {
-      perror("open");
-      return;
-    }
-
-    struct array tokens = create_array(sizeof(char *));
-    tokenize(first_semicolon_token, " ", &tokens); // &mut tokens
-    do_commands(&tokens, GLOBALS, STDIN_FILENO, fd, STDOUT_FILENO);
-    free(tokens.array_ptr);
-    return;
-  }
-  // end redirection handling
-
-  // begin pipe handling
-  char *pipe_token_strtok_state = NULL;
-  char *pipe_token = strtok_r(buffer_copy3, "|", &pipe_token_strtok_state);
-  char *first_pipe_token = strdup(pipe_token);
-  // end pipe handling
-
-  struct array tokens = create_array(sizeof(char *));
-  tokenize(first_semicolon_token, " ", &tokens); // &mut tokens
-
-  // normal stdin and stdout
-  do_commands(&tokens, GLOBALS, STDIN_FILENO, STDOUT_FILENO, STDERR_FILENO);
-
-  while ((semicolon_token = strtok_r(NULL, ";", &semicolon_token_strtok_state)) != NULL)
-  {
-    printf("Here's what got separated: %s\n", (char *)semicolon_token); //TODO delet this
-    determine_what_to_do(GLOBALS, semicolon_token);
-  }
-  free(buffer_copy);
-  free(buffer_copy2);
-  free(buffer_copy3);
-
-  free(first_semicolon_token);
-  free(semicolon_token);
-
-  free(first_redirect_token);
-  free(redirect_token);
-
-  free(first_pipe_token);
-  // free(pipe_token);
-
-  free(tokens.array_ptr);
+  split_semicolon_and_run(buffer);
 }
 
-void do_commands(struct array *tokens, struct globals *GLOBALS, int sin,
-                 int sout, int serr)
+void split_semicolon_and_run(char *buffer)
 {
+  char *strtok_state = NULL;
+  for (char *token = strtok_r(buffer, ";", &strtok_state); token != NULL; token = strtok_r(NULL, ";", &strtok_state))
+  {
+    split_pipe_and_run(token);
+  }
+}
 
+void split_pipe_and_run(char *buffer)
+{
+  char *strtok_state = NULL;
+  char *first_token = strtok_r(buffer, "|", &strtok_state);
+  char *second_token = strtok_r(NULL, "|", &strtok_state);
+
+  if (second_token != NULL)
+  {
+    int pipefd[2];
+    if (pipe(pipefd) == 0)
+    {
+      printf("pipefd: %d, SOUT: %d\n", pipefd[0], pipefd[1]);
+      fprintf(stderr, "BLIP\n");
+      split_redirect_and_run(first_token, STDIN_FILENO, pipefd[1]);
+      fprintf(stderr, "BLIP\n");
+      split_redirect_and_run(second_token, pipefd[0], STDOUT_FILENO);
+      fprintf(stderr, "BLIP\n");
+      wait(NULL);
+      fprintf(stderr, "BLIP\n");
+      close(pipefd[0]);
+      fprintf(stderr, "BLIP\n");
+      wait(NULL);
+      close(pipefd[1]);
+      fprintf(stderr, "BLIP\n");
+    }
+    else
+    {
+      perror("pipe failed");
+    }
+    return;
+  }
+  split_redirect_and_run(first_token, STDIN_FILENO, STDOUT_FILENO);
+  wait(NULL);
+}
+
+void split_redirect_and_run(char *buffer, int sin, int sout)
+{
+  char *strtok_state = NULL;
+  char *first_token = strtok_r(buffer, ">", &strtok_state);
+  char *second_token = strtok_r(NULL, ">", &strtok_state);
+
+  if (second_token != NULL)
+  {
+    if (sout != STDOUT_FILENO)
+    { //close sout if we're not redirecting
+      close(sout);
+    }
+    // WE ARE ASSUMING THAT THIS IS A FILE
+    int fd = open(second_token, O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    if (fd == -1)
+    {
+      perror("failed to open file");
+      return;
+    }
+    sout = fd;
+  }
+  split_space_and_run(first_token, sin, sout);
+}
+
+void split_space_and_run(char *buffer, int sin, int sout)
+{
+  // char *strtok_state = NULL;
+  // for (char *token = strtok_r(buffer, " ", &strtok_state); token != NULL; token = strtok_r(NULL, ";", &strtok_state))
+  // {
+  // }
+  struct array tokens = create_array(sizeof(char *));
+  tokenize(buffer, " ", &tokens);
+  char *p = NULL;
+  push_to_array(&tokens, &p);
+  do_commands(&tokens, sin, sout);
+}
+
+void do_commands(struct array *tokens, int sin,
+                 int sout)
+{
   if (strcmp(*((char **)get_from_array(tokens, 0)), "cd") == 0)
   {
     if (tokens->size > 2)
@@ -131,7 +154,7 @@ void do_commands(struct array *tokens, struct globals *GLOBALS, int sin,
       fprintf(stderr, "Expected 0 args for $PATH\n");
       return;
     }
-    fprintf(stdout, "Current PATH: %s\n", GLOBALS->PATH);
+    print_path();
   }
   else if (strcmp(*((char **)get_from_array(tokens, 0)), "a2path") == 0)
   {
@@ -154,16 +177,7 @@ void do_commands(struct array *tokens, struct globals *GLOBALS, int sin,
                       "a2path $PATH:/usr/local/bin\n");
       return;
     }
-    // in the future, use strtok and asprintf LOL
-    char *new_path = malloc(
-        strlen(GLOBALS->PATH) +
-        strlen(strchr(*((char **)get_from_array(tokens, 1)), (int)":") - 1) +
-        1);
-    strcpy(new_path, GLOBALS->PATH);
-    strcat(new_path,
-           strchr(*((char **)get_from_array(tokens, 1)), (int)":") - 1);
-    free(GLOBALS->PATH);
-    GLOBALS->PATH = new_path;
+    add_to_path(*(char **)get_from_array(tokens, 1));
   }
   else if ((strcmp(*((char **)get_from_array(tokens, 0)), "exit")) == 0)
   {
@@ -172,88 +186,54 @@ void do_commands(struct array *tokens, struct globals *GLOBALS, int sin,
       fprintf(stderr, "Expected 0 args for exit\n");
       return;
     }
-    GLOBALS->EXIT = true;
+    // GLOBALS->EXIT = true; // TODO IMPLEMENT EXIT
   }
   else
   {
-    attempt_evaluate_from_path(tokens, GLOBALS, sin, sout, serr);
+    // attempt_evaluate_from_path(tokens, GLOBALS, STDIN_FILENO, STDOUT_FILENO);
+    char *path = get_absolute_path(*((char **)get_from_array(tokens, 0)));
+    if (path == NULL)
+    {
+      fprintf(stderr, "No command found\n");
+    }
+    else
+    {
+      exec_from_path(tokens, sin, sout, path);
+    }
   }
 }
 
-void attempt_evaluate_from_path(struct array *tokens, struct globals *GLOBALS, int sin, int sout, int serr)
+void exec_from_path(struct array *tokens, int sin, int sout, char *path)
 {
-
-  struct array paths = create_array(sizeof(char *));
-  char *path_copy = strdup(GLOBALS->PATH);
-
-  tokenize(path_copy, ":", &paths); // &mut paths
-
-  // next time, loop over strtok
-  for (int i = 0; i < paths.size; i += 1)
-  {
-    char *concat = NULL;
-    asprintf(&concat, "%s/%s", *(char **)get_from_array(&paths, i),
-             *(char **)get_from_array(tokens, 0));
-
-    *(char **)get_from_array(&paths, i) = concat;
-  }
-  char *cwd = getcwd(NULL, PATH_MAX);
-  char *concat = NULL;
-  asprintf(&concat, "%s/%s", cwd, *(char **)get_from_array(tokens, 0));
-  free(cwd);
-  push_to_array(&paths, &concat);
-
+  printf("SIN: %d, SOUT: %d\n", sin, sout);
   __pid_t f = fork();
   if (!f) // child
   {
-    if (dup2(sin, STDIN_FILENO) == -1)
+    if (sin != STDIN_FILENO && dup2(sin, STDIN_FILENO) == -1)
     {
       perror("dup2");
       close(sin);
       return;
     }
-    if (dup2(sout, STDOUT_FILENO) == -1)
+
+    if (sout != STDOUT_FILENO && dup2(sout, STDOUT_FILENO) == -1)
     {
       perror("dup2");
       close(sout);
+      close(sin);
       return;
     }
-    if (dup2(serr, STDERR_FILENO) == -1)
-    {
-      perror("dup2");
-      close(serr);
-      return;
-    }
-
-    char *p = NULL;
-    push_to_array(tokens, &p);
-    if (access(*(char **)get_from_array(tokens, 0), F_OK | X_OK) ==
-        0)
-    { // attempt to execute the absolute path
-      execve(*(char **)get_from_array(tokens, 0), tokens->array_ptr, NULL);
-    }
-    for (int i = 0; i < paths.size; i += 1)
-    {
-
-      if (access(*(char **)get_from_array(&paths, i), F_OK | X_OK) == 0)
-      {
-        execve(*(char **)get_from_array(&paths, i), tokens->array_ptr, NULL);
-      }
-
-      else
-      {
-        ;
-      }
-    }
+    fprintf(stderr, "HEEEEY%d\n", sout);
+    execve(path, tokens->array_ptr, NULL);
   }
-  wait(NULL); // wait for child process to terminate
+  // wait(NULL); // wait for child process to terminate
 
   // cleanup
-  for (int i = 0; i < paths.size; i += 1)
-  {
-    free(*(void **)get_from_array(&paths, i));
-  }
-  free(paths.array_ptr);
-  free(path_copy);
+  // for (int i = 0; i < paths.size; i += 1)
+  // {
+  //   free(*(void **)get_from_array(&paths, i));
+  // }
+  // free(paths.array_ptr);
+  // free(path_copy);
   // free(concat);
 }
