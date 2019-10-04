@@ -19,7 +19,8 @@
 #include "paths.h"
 
 bool split_semicolon_and_run(char *buffer);
-bool split_pipe_and_run(char *buffer);
+bool look_for_ampersand_and_run(char *buffer);
+bool split_pipe_and_run(char *buffer, int sin, int sout, bool run_in_background);
 bool split_redirect_and_run(char *buffer, int sin, int sout, int close_me);
 bool split_space_and_run(char *buffer, int sin, int sout, int close_me);
 bool do_commands();
@@ -36,12 +37,28 @@ bool split_semicolon_and_run(char *buffer)
   char *strtok_state = NULL;
   for (char *token = strtok_r(buffer, ";", &strtok_state); token != NULL; token = strtok_r(NULL, ";", &strtok_state))
   {
-    ret &= split_pipe_and_run(token);
+    ret = ret && look_for_ampersand_and_run(token);
   }
   return ret;
 }
 
-bool split_pipe_and_run(char *buffer)
+bool look_for_ampersand_and_run(char *buffer)
+{
+  char *ampersand = strstr(buffer, "&"); // assignment spec says & is always at the end of a command
+  strtok(buffer, "&");                   //remove the &
+  if (ampersand != NULL)
+  {
+    int fd = open("/dev/null", O_WRONLY);
+    if (fd == -1)
+    {
+      perror("failed to open /dev/null");
+    }
+    return split_pipe_and_run(buffer, fd, fd, true);
+  }
+  return split_pipe_and_run(buffer, STDIN_FILENO, STDOUT_FILENO, false);
+}
+
+bool split_pipe_and_run(char *buffer, int sin, int sout, bool run_in_background)
 {
   char *strtok_state = NULL;
   char *first_token = strtok_r(buffer, "|", &strtok_state);
@@ -52,21 +69,15 @@ bool split_pipe_and_run(char *buffer)
     int pipefd[2];
     if (pipe(pipefd) == 0)
     {
-      printf("pipefd: %d, SOUT: %d\n", pipefd[0], pipefd[1]);
-      fprintf(stderr, "BLIP\n");
-      split_redirect_and_run(first_token, STDIN_FILENO, pipefd[1], pipefd[0]);
-      fprintf(stderr, "BLIP\n");
-      split_redirect_and_run(second_token, pipefd[0], STDOUT_FILENO, pipefd[1]);
-      fprintf(stderr, "BLIP\n");
-      wait(NULL);
-      fprintf(stderr, "BLIP\n");
-
+      split_redirect_and_run(first_token, sin, pipefd[1], pipefd[0]);
+      split_redirect_and_run(second_token, pipefd[0], sout, pipefd[1]);
       close(pipefd[1]);
       close(pipefd[0]);
-
-      fprintf(stderr, "BLIP\n");
-      wait(NULL); // TODO: IT GETS STUCK ON THIS BLIP UNTIL ^C
-      fprintf(stderr, "BLIP\n");
+      if (!run_in_background)
+      {
+        wait(NULL);
+        wait(NULL);
+      }
     }
     else
     {
@@ -75,8 +86,11 @@ bool split_pipe_and_run(char *buffer)
     // return false; // exit
     return true;
   }
-  bool ret = split_redirect_and_run(first_token, STDIN_FILENO, STDOUT_FILENO, -1);
-  wait(NULL);
+  bool ret = split_redirect_and_run(first_token, sin, sout, -1);
+  if (!run_in_background)
+  {
+    wait(NULL);
+  }
   return ret;
 }
 
@@ -84,7 +98,7 @@ bool split_redirect_and_run(char *buffer, int sin, int sout, int close_me)
 {
   char *strtok_state = NULL;
   char *first_token = strtok_r(buffer, ">", &strtok_state);
-  char *second_token = strtok_r(NULL, ">", &strtok_state);
+  char *second_token = strtok_r(NULL, "> ", &strtok_state);
 
   if (second_token != NULL)
   {
@@ -202,32 +216,27 @@ bool do_commands(struct array *tokens, int sin,
 
 void exec_from_path(struct array *tokens, int sin, int sout, char *path, int close_me)
 {
-  printf("SIN: %d, SOUT: %d\n", sin, sout);
   __pid_t f = fork();
   if (!f) // child
   {
     close(close_me);
-    fprintf(stderr, "closed: %d\n", close_me);
     if (sin != STDIN_FILENO && dup2(sin, STDIN_FILENO) == -1)
     {
       perror("dup2");
+      close(sin);
       close(sout);
       free(path);
-      // free(tokens->array_ptr);
       return;
     }
 
     if (sout != STDOUT_FILENO && dup2(sout, STDOUT_FILENO) == -1)
     {
       perror("dup2");
-      // invalid file descriptor -1
-      // close(sout);
       close(sin);
+      close(sout);
       free(path);
-      // free(tokens->array_ptr);
       return;
     }
-    fprintf(stderr, "HEEEEY%d\n", sout);
     execve(path, tokens->array_ptr, NULL);
   }
 
