@@ -22,7 +22,7 @@ void tokenize(char *str, const char *delim, struct array *array)
 
 void signal_callback_handler(int signum)
 {
-  ; // do literally nothing
+  fprintf(stdout, "\n");
 }
 
 void handle_signals()

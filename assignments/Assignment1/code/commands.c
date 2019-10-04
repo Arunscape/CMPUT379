@@ -6,39 +6,42 @@
 #include <unistd.h>
 
 #include <limits.h>
-#define _POSIX_C_SOURCE 1
+// #define _POSIX_C_SOURCE 1
 
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <stdbool.h>
 
 #include "array.h"
 #include "util.h"
 #include "paths.h"
 
-void split_semicolon_and_run(char *buffer);
-void split_pipe_and_run(char *buffer);
-void split_redirect_and_run(char *buffer, int sin, int sout);
-void split_space_and_run(char *buffer, int sin, int sout);
-void do_commands();
+bool split_semicolon_and_run(char *buffer);
+bool split_pipe_and_run(char *buffer);
+bool split_redirect_and_run(char *buffer, int sin, int sout);
+bool split_space_and_run(char *buffer, int sin, int sout);
+bool do_commands();
 void exec_from_path(struct array *tokens, int sin, int sout, char *path);
 
-void run_line(char *buffer)
+bool run_line(char *buffer)
 {
-  split_semicolon_and_run(buffer);
+  return split_semicolon_and_run(buffer);
 }
 
-void split_semicolon_and_run(char *buffer)
+bool split_semicolon_and_run(char *buffer)
 {
+  bool ret = true;
   char *strtok_state = NULL;
   for (char *token = strtok_r(buffer, ";", &strtok_state); token != NULL; token = strtok_r(NULL, ";", &strtok_state))
   {
-    split_pipe_and_run(token);
+    ret &= split_pipe_and_run(token);
   }
+  return ret;
 }
 
-void split_pipe_and_run(char *buffer)
+bool split_pipe_and_run(char *buffer)
 {
   char *strtok_state = NULL;
   char *first_token = strtok_r(buffer, "|", &strtok_state);
@@ -67,13 +70,14 @@ void split_pipe_and_run(char *buffer)
     {
       perror("pipe failed");
     }
-    return;
+    return false; // exit
   }
-  split_redirect_and_run(first_token, STDIN_FILENO, STDOUT_FILENO);
+  bool ret = split_redirect_and_run(first_token, STDIN_FILENO, STDOUT_FILENO);
   wait(NULL);
+  return ret;
 }
 
-void split_redirect_and_run(char *buffer, int sin, int sout)
+bool split_redirect_and_run(char *buffer, int sin, int sout)
 {
   char *strtok_state = NULL;
   char *first_token = strtok_r(buffer, ">", &strtok_state);
@@ -90,23 +94,22 @@ void split_redirect_and_run(char *buffer, int sin, int sout)
     if (fd == -1)
     {
       perror("failed to open file");
-      return;
     }
     sout = fd;
   }
-  split_space_and_run(first_token, sin, sout);
+  return split_space_and_run(first_token, sin, sout);
 }
 
-void split_space_and_run(char *buffer, int sin, int sout)
+bool split_space_and_run(char *buffer, int sin, int sout)
 {
   struct array tokens = create_array(sizeof(char *));
   tokenize(buffer, " ", &tokens);
   char *p = NULL;
   push_to_array(&tokens, &p);
-  do_commands(&tokens, sin, sout);
+  return do_commands(&tokens, sin, sout);
 }
 
-void do_commands(struct array *tokens, int sin,
+bool do_commands(struct array *tokens, int sin,
                  int sout)
 {
   if (strcmp(*((char **)get_from_array(tokens, 0)), "cd") == 0)
@@ -114,12 +117,10 @@ void do_commands(struct array *tokens, int sin,
     if (tokens->size > 3)
     {
       fprintf(stderr, "Too many args for cd command, expected 1\n");
-      return;
     }
     else if (tokens->size < 3)
     {
       fprintf(stderr, "Expected one arg for cd\n");
-      return;
     }
 
     if (chdir(*((char **)get_from_array(tokens, 1))) == -1)
@@ -132,7 +133,6 @@ void do_commands(struct array *tokens, int sin,
     if (tokens->size > 2)
     {
       fprintf(stderr, "Expected 0 args for pwd\n");
-      return;
     }
     char cwd[PATH_MAX];
     if (getcwd(cwd, PATH_MAX) != NULL)
@@ -149,7 +149,6 @@ void do_commands(struct array *tokens, int sin,
     if (tokens->size > 2)
     {
       fprintf(stderr, "Expected 0 args for $PATH\n");
-      return;
     }
     print_path();
   }
@@ -158,12 +157,10 @@ void do_commands(struct array *tokens, int sin,
     if (tokens->size > 3)
     {
       fprintf(stderr, "Too many arguments, expected 1 arg for a2path\n");
-      return;
     }
     else if (tokens->size < 3)
     {
       fprintf(stderr, "Expected 1 arg for a2path\n");
-      return;
     }
     else if (strlen(*((char **)get_from_array(tokens, 1))) < 7 ||
              strncmp(*((char **)get_from_array(tokens, 1)), "$PATH:", 6) !=
@@ -172,7 +169,6 @@ void do_commands(struct array *tokens, int sin,
       fprintf(stderr, "Incorrect syntax for 2nd arg in a2path. It should start "
                       "with $PATH: and then have a path to add.\nFor example: "
                       "a2path $PATH:/usr/local/bin\n");
-      return;
     }
     add_to_path(*(char **)get_from_array(tokens, 1) + sizeof(char *) * 7);
   }
@@ -181,13 +177,12 @@ void do_commands(struct array *tokens, int sin,
     if (tokens->size > 2)
     {
       fprintf(stderr, "Expected 0 args for exit\n");
-      return;
     }
-    // GLOBALS->EXIT = true; // TODO IMPLEMENT EXIT
+    free(tokens->array_ptr);
+    return false; // exit
   }
   else
-  {
-    // attempt_evaluate_from_path(tokens, GLOBALS, STDIN_FILENO, STDOUT_FILENO);
+  { // look for executables
     char *path = get_absolute_path(*((char **)get_from_array(tokens, 0)));
     if (path == NULL)
     {
@@ -198,6 +193,8 @@ void do_commands(struct array *tokens, int sin,
       exec_from_path(tokens, sin, sout, path);
     }
   }
+  free(tokens->array_ptr);
+  return true;
 }
 
 void exec_from_path(struct array *tokens, int sin, int sout, char *path)
@@ -210,14 +207,19 @@ void exec_from_path(struct array *tokens, int sin, int sout, char *path)
     {
       perror("dup2");
       close(sin);
+      free(path);
+      // free(tokens->array_ptr);
       return;
     }
 
     if (sout != STDOUT_FILENO && dup2(sout, STDOUT_FILENO) == -1)
     {
       perror("dup2");
-      close(sout);
+      // invalid file descriptor -1
+      // close(sout);
       close(sin);
+      free(path);
+      // free(tokens->array_ptr);
       return;
     }
     fprintf(stderr, "HEEEEY%d\n", sout);
@@ -225,4 +227,5 @@ void exec_from_path(struct array *tokens, int sin, int sout, char *path)
   }
 
   free(path);
+  // free(tokens->array_ptr);
 }

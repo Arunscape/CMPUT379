@@ -28,15 +28,25 @@ int main(int argc, char **argv)
     size_t buffer_size = 0;
     if (getline(&buffer, &buffer_size, stdin) == -1)
     {
+      if (feof(stdin))
+      {
+        free(buffer);
+        break;
+      }
       clearerr(stdin);
       free(buffer);
       continue;
     };
     strtok(buffer, "\n"); // get rid of \n at the end of the line
-    run_line(buffer);     // &mut buffer
+    if (!run_line(buffer))
+    { // &mut buffer
+      free(buffer);
+      // TODO other cleanup
+      break;
+    };
     free(buffer);
   }
-  // return 0;
+  // TODO other cleanup;
   cleanup_PATH();
   _exit(0);
 }

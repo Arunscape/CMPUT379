@@ -32,6 +32,7 @@ char *get_absolute_path(char *command)
         char *executable_path = is_executable(token, command);
         if (executable_path != NULL)
         {
+            free(paths_copy);
             return executable_path;
         }
     }
@@ -61,7 +62,6 @@ char *get_absolute_path(char *command)
     }
 
     return NULL;
-    // TODO check current directory
 }
 
 void add_to_path(char *path)
