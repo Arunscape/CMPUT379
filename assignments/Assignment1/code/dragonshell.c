@@ -13,9 +13,13 @@
 #include "util.h"
 #include "welcome.h"
 #include "paths.h"
+
 int main(int argc, char **argv)
 {
 
+  struct array CHILDREN_PIDS = create_array(sizeof(pid_t));
+
+  
   handle_signals();
   add_to_path("/bin/:/usr/bin");
 
@@ -24,6 +28,7 @@ int main(int argc, char **argv)
   for (;;)
   {
 
+    printf("SIZE: %zu\n", CHILDREN_PIDS.size);
     printf("🐲 dragonshell🐉 > ");
 
     char *buffer = NULL;
@@ -32,24 +37,27 @@ int main(int argc, char **argv)
     {
       if (feof(stdin))
       {
-        fprintf(stderr, "AAHHHHHHHHHH\n");
+        // printf("REEEE\n");
+        clearerr(stdin);
+        // kill_children(&CHILDREN_PIDS);
         break;
       }
-      clearerr(stdin);
+
       free(buffer);
       continue;
     };
-    strtok(buffer, "\n");  // get rid of \n at the end of the line
-    if (!run_line(buffer)) // run the line. if false is returned, exit
+    strtok(buffer, "\n");                  // get rid of \n at the end of the line
+    if (!run_line(buffer, &CHILDREN_PIDS)) // run the line. if false is returned, exit
     {
       free(buffer);
-      fprintf(stderr, "REEEEEEEEEEEEEEEEEE");
       // TODO other cleanup
       break;
     };
     free(buffer);
   }
   // TODO other cleanup;
+  printf("REEEE\n");
   cleanup_PATH();
+  kill_children(&CHILDREN_PIDS);
   _exit(0);
 }

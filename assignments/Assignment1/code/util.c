@@ -4,6 +4,9 @@
 #include <unistd.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <sys/wait.h>
 
 #include "array.h"
 
@@ -22,6 +25,7 @@ void tokenize(char *str, const char *delim, struct array *array)
 
 void signal_callback_handler(int signum)
 {
+
   fprintf(stdout, "\n");
 }
 
@@ -33,4 +37,18 @@ void handle_signals()
   sa.sa_handler = signal_callback_handler;
   sigaction(SIGINT, &sa, NULL);
   sigaction(SIGTSTP, &sa, NULL);
+}
+
+void kill_children(struct array *CHILD_PIDS)
+{
+  printf("KILLING CHILDREN\n");
+  printf("size: %d\n", CHILD_PIDS->size);
+  for (int i = 0; i < CHILD_PIDS->size; i += 1)
+  {
+    pid_t pid = *(pid_t **)get_from_array(CHILD_PIDS, i);
+    printf("%ld\n", (long)pid);
+    kill(pid, SIGKILL); // FORCE IT
+    waitpid(pid, NULL, 0);
+    // kill(pid, SIGTERM); // politely tell it to end itself
+  }
 }

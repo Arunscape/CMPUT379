@@ -6,4 +6,6 @@ void handle_signals();
 
 void tok(char *str, const char *delim, char **argv);
 
+void kill_children(struct array *CHILD_PIDS);
+
 #endif // UTIL_H_

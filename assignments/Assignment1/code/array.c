@@ -5,8 +5,10 @@
 #include "array.h"
 const size_t DEFAULT_CAPACITY = 8;
 
-void push_to_array(struct array *array, void *item) {
-  if (array->size >= array->capacity) {
+void push_to_array(struct array *array, void *item)
+{
+  if (array->size >= array->capacity)
+  {
     array->array_ptr =
         realloc(array->array_ptr, array->item_size * array->capacity * 2);
     array->capacity *= 2;
@@ -16,11 +18,13 @@ void push_to_array(struct array *array, void *item) {
   array->size += 1;
 }
 
-void *get_from_array(const struct array *array, size_t index) {
+void *get_from_array(const struct array *array, size_t index)
+{
   return array->array_ptr + index * array->item_size;
 }
 
-struct array create_array(size_t item_size) {
+struct array create_array(size_t item_size)
+{
   return (struct array){
       .size = 0,
       .capacity = DEFAULT_CAPACITY,
