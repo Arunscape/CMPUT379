@@ -28,7 +28,7 @@ char *get_absolute_path(char *command)
     // TODO check current directory
 }
 
-void add_to_path(const char *path)
+void add_to_path(char *path)
 {
     if (PATHS == NULL)
     {

@@ -57,9 +57,9 @@ void split_pipe_and_run(char *buffer)
       wait(NULL);
       fprintf(stderr, "BLIP\n");
       close(pipefd[0]);
+      close(pipefd[1]);
       fprintf(stderr, "BLIP\n");
       wait(NULL);
-      close(pipefd[1]);
       fprintf(stderr, "BLIP\n");
     }
     else
@@ -98,10 +98,6 @@ void split_redirect_and_run(char *buffer, int sin, int sout)
 
 void split_space_and_run(char *buffer, int sin, int sout)
 {
-  // char *strtok_state = NULL;
-  // for (char *token = strtok_r(buffer, " ", &strtok_state); token != NULL; token = strtok_r(NULL, ";", &strtok_state))
-  // {
-  // }
   struct array tokens = create_array(sizeof(char *));
   tokenize(buffer, " ", &tokens);
   char *p = NULL;
@@ -114,12 +110,12 @@ void do_commands(struct array *tokens, int sin,
 {
   if (strcmp(*((char **)get_from_array(tokens, 0)), "cd") == 0)
   {
-    if (tokens->size > 2)
+    if (tokens->size > 3)
     {
       fprintf(stderr, "Too many args for cd command, expected 1\n");
       return;
     }
-    else if (tokens->size < 1)
+    else if (tokens->size < 3)
     {
       fprintf(stderr, "Expected one arg for cd\n");
       return;
@@ -132,7 +128,7 @@ void do_commands(struct array *tokens, int sin,
   }
   else if (strcmp(*((char **)get_from_array(tokens, 0)), "pwd") == 0)
   {
-    if (tokens->size > 1)
+    if (tokens->size > 2)
     {
       fprintf(stderr, "Expected 0 args for pwd\n");
       return;
@@ -149,7 +145,7 @@ void do_commands(struct array *tokens, int sin,
   }
   else if (strcmp(*((char **)get_from_array(tokens, 0)), "$PATH") == 0)
   {
-    if (tokens->size > 1)
+    if (tokens->size > 2)
     {
       fprintf(stderr, "Expected 0 args for $PATH\n");
       return;
@@ -158,12 +154,12 @@ void do_commands(struct array *tokens, int sin,
   }
   else if (strcmp(*((char **)get_from_array(tokens, 0)), "a2path") == 0)
   {
-    if (tokens->size > 2)
+    if (tokens->size > 3)
     {
       fprintf(stderr, "Too many arguments, expected 1 arg for a2path\n");
       return;
     }
-    else if (tokens->size < 2)
+    else if (tokens->size < 3)
     {
       fprintf(stderr, "Expected 1 arg for a2path\n");
       return;
@@ -177,11 +173,11 @@ void do_commands(struct array *tokens, int sin,
                       "a2path $PATH:/usr/local/bin\n");
       return;
     }
-    add_to_path(*(char **)get_from_array(tokens, 1));
+    add_to_path(*(char **)get_from_array(tokens, 1) + sizeof(char *) * 7);
   }
   else if ((strcmp(*((char **)get_from_array(tokens, 0)), "exit")) == 0)
   {
-    if (tokens->size > 1)
+    if (tokens->size > 2)
     {
       fprintf(stderr, "Expected 0 args for exit\n");
       return;
@@ -226,14 +222,6 @@ void exec_from_path(struct array *tokens, int sin, int sout, char *path)
     fprintf(stderr, "HEEEEY%d\n", sout);
     execve(path, tokens->array_ptr, NULL);
   }
-  // wait(NULL); // wait for child process to terminate
 
-  // cleanup
-  // for (int i = 0; i < paths.size; i += 1)
-  // {
-  //   free(*(void **)get_from_array(&paths, i));
-  // }
-  // free(paths.array_ptr);
-  // free(path_copy);
-  // free(concat);
+  free(path);
 }

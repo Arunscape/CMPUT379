@@ -14,33 +14,28 @@
 int main(int argc, char **argv)
 {
 
-  add_to_path("/bin/:/usr/bin");
   handle_signals();
+  add_to_path("/bin/:/usr/bin");
 
   printDragon();
 
   for (;;)
   {
 
-    printf("\n🐲 dragonshell🐉 > ");
+    printf("🐲 dragonshell🐉 > ");
 
     char *buffer = NULL;
     size_t buffer_size = 0;
     if (getline(&buffer, &buffer_size, stdin) == -1)
     {
-      break;
+      clearerr(stdin);
+      free(buffer);
+      continue;
     }; // &mut buffer &mut buffer_size
     strtok(buffer, "\n");
     // get rid of \n at the end of the line
     run_line(buffer); // &mut buffer
     free(buffer);
-
-    // _exit(0);
-    // exit(0);
-    if (false)
-    {
-      free(buffer);
-    }
   }
   // return 0;
   cleanup_PATH();

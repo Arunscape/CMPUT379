@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include <string.h>
 #include <unistd.h>
 #include <signal.h>
@@ -18,21 +20,9 @@ void tokenize(char *str, const char *delim, struct array *array)
   }
 }
 
-// void tok(char *str, const char *delim, char **argv)
-// {
-//   char *token;
-//   char *token_state = NULL;
-//   token = strtok_r(str, delim, &token_state);
-//   for (size_t i = 0; token != NULL; ++i)
-//   {
-//     argv[i] = token;
-//     token = strtok(NULL, delim);
-//   }
-// }
-
 void signal_callback_handler(int signum)
 {
-  printf("\n");
+  ; // do literally nothing
 }
 
 void handle_signals()
