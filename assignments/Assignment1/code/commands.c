@@ -83,7 +83,6 @@ bool split_pipe_and_run(char *buffer, int sin, int sout, bool run_in_background)
     {
       perror("pipe failed");
     }
-    // return false; // exit
     return true;
   }
   bool ret = split_redirect_and_run(first_token, sin, sout, -1);
@@ -154,7 +153,7 @@ bool do_commands(struct array *tokens, int sin,
     char cwd[PATH_MAX];
     if (getcwd(cwd, PATH_MAX) != NULL)
     {
-      printf("%s\n", cwd);
+      dprintf(sout, "%s\n", cwd);
     }
     else
     {
@@ -167,7 +166,7 @@ bool do_commands(struct array *tokens, int sin,
     {
       fprintf(stderr, "Expected 0 args for $PATH\n");
     }
-    print_path();
+    print_path(sout);
   }
   else if (strcmp(*((char **)get_from_array(tokens, 0)), "a2path") == 0)
   {

@@ -79,9 +79,9 @@ void add_to_path(char *path)
     }
 }
 
-void print_path()
+void print_path(int fd)
 {
-    fprintf(stdout, "%s", PATHS);
+    dprintf(fd, "%s", PATHS);
 }
 
 void cleanup_PATH()
