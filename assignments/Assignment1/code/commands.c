@@ -1,11 +1,12 @@
-#define _POSIX_C_SOURCE 1
 #define _GNU_SOURCE
 
-#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+#include <limits.h>
+#define _POSIX_C_SOURCE 1
 
 #include <sys/types.h>
 #include <sys/wait.h>

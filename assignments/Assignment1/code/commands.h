@@ -1,6 +1,6 @@
-#ifndef COMMANDS_H_ /* Include guard */
+#ifndef COMMANDS_H_
 #define COMMANDS_H_
 
 void run_line(char *buffer);
 
-#endif // DRAGON_H_
+#endif // COMMANDS_H_

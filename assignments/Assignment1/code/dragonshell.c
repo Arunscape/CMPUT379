@@ -31,10 +31,9 @@ int main(int argc, char **argv)
       clearerr(stdin);
       free(buffer);
       continue;
-    }; // &mut buffer &mut buffer_size
-    strtok(buffer, "\n");
-    // get rid of \n at the end of the line
-    run_line(buffer); // &mut buffer
+    };
+    strtok(buffer, "\n"); // get rid of \n at the end of the line
+    run_line(buffer);     // &mut buffer
     free(buffer);
   }
   // return 0;
