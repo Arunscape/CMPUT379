@@ -79,9 +79,6 @@ bool split_pipe_and_run(char *buffer, int sin, int sout, bool run_in_background)
       close(pipefd[0]);
       if (!run_in_background)
       {
-
-        // wait(NULL);
-        // wait(NULL)
         if (process1_pid > 0)
         {
           waitpid(process1_pid, NULL, 0);
@@ -102,7 +99,6 @@ bool split_pipe_and_run(char *buffer, int sin, int sout, bool run_in_background)
   bool ret = split_redirect_and_run(first_token, sin, sout, -1, &process_pid);
   if (!run_in_background)
   {
-    // wait(NULL);
     if (process_pid > 0)
     {
       waitpid(process_pid, NULL, 0);
@@ -239,8 +235,8 @@ bool do_commands(struct array *tokens, int sin,
 
 void exec_from_path(struct array *tokens, int sin, int sout, char *path, int close_me, pid_t *process)
 {
-  __pid_t f = fork();
-  process = &f;
+  pid_t f = fork();
+  *process = f;
   if (!f) // child
   {
     close(close_me);
