@@ -30,7 +30,6 @@ void tokenize(char *str, const char *delim, struct array *array)
 void signal_callback_handler(int signum)
 {
   fprintf(stdout, "\n");
-  // printf("\n🐲 dragonshell🐉 > ");
 }
 
 void handle_signals()

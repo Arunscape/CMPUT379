@@ -1,10 +1,18 @@
 # DragonShell
+by Arun Woosaree
+
+awoosare
 
 # Design choices
+Dragonshell's prompt prints emoji, because they are cool and lots of modern terminal
+emulators support them
+🐲 dragonshell🐉 >
 
 ## Makefile
  - clang is used, because I confirmed with that TA that we can use it since clang
    is installed on the lab machines
+ - dragonshell is not built with the debug flag as per my discussion with a TA
+ - xxd is used to generate a .h file which contains the data needed to print the dragon. I did this because C does not have raw strings
 
 ## dragonshell.c
 - houses the main loop of the program.
@@ -94,17 +102,94 @@ They will not respond
 - the user is then notified is the syntax check fails
 - if there is no syntax error, the chain of parsing functions returns boolean false
   which the main loop in the function checks for at run_line().
-  Dragonshell will then attemp to gracefully exit
+  Dragonshell will then attempt to gracefully exit
 
 #### &
 - if & is at the end of a command, we redirect its output to /dev/null 
+- if there is an &, dragonshell assumes it is always at the end of a command
+  as per the assignment spec and when confirming with TAs. 
+  for example: sleep 10 &; cowsay moo will send sleep to the background but
+  cowsay will still run immediately
 
+### Running external programs
+
+- external programs can be run if they are found in the $PATH variable intenally
+  used by dragonshell (not to be confused with the environment variable as 
+  per the assignment spec)
+- multiple commands separated by ; work as well. I'm using strtok loops in a 
+  form inspired by recursive decsent parsing. It's a primitive implementation
+  which first separates by semicolons, &, |, > , and then spaces
+- child processed run in the background are added to an array which keep track
+  of their pids. I ran out of time during my implementation, otherwise I 
+  would have used my custom array struct. I get it, global variables are not the best,
+  and also some space is wasted on the stack. This array is of size 4096 of type
+  pid_t, but old pids are overwritten, so it is very unlikely you'd hit the limit.
+  In fact, I probably could have gone with something smaller in size (or just use
+  my array implementation 😂🙄
+
+#### piping
+- piping works with external programs
+- incidentally with my implementation, it seems to work with pwd as well,
+  which is a built in command from my understanding this was not required, but
+  it works!
+- as per the assignment spec, dragonshell only supports one level of piping
+
+#### redirection
+- in my testing, redirection works as intended.
+- the command after > is always assumed to be a file and so if it doesn't exist
+  one is created with that name
+
+#### signals
+- dragonshell will ignore ^C and ^Z, but its child processes obey them
+- dragonshell will gracefully quit when EOF is sent by pressing ^D
+
+#### opening dragonshell within dragonshell
+dragonshell can be run from within itself, however stdout can sometimes look weird like this:
+🐲 dragonshell🐉 > 🐲 dragonshell🐉 > 
+- this could be fixed by silencing stdout of the first instance and
+  redirecting it when the second dragonshell is exited but this use case
+  was not mentioned in the assignment spec so it was not done
+- there might be an edge case with signal interrupts when dragonshell
+  is run from itself where 🐲 dragonshell🐉 >  is printed continuously, 
+  however an attempt was made to fix that and it does not seem to happen any more
+  in my limited testing
+
+## System calls
+the versions available using man 2 were used. 
+man pages version released with linux 5.02
+- chdir()
+- fork()
+- execve()
+- _exit()
+- wait()
+- wait_pid()
+- open()
+- close()
+- dup2()
+- pipe()
+- kill()
+
+## Testing
+- aside from the assignment spec, we were not given many test cases
+- I tried my best to come up with some cases myself given the limitations in 
+  the assignment spec, and also clarified with TAs about certain things
+- valgrind was used to make sure all memory was freed. In my testing,
+  it always said no leaks are possible
 
 
 # Credit
 - the strok for loops I made were inspired by these while loops https://gist.github.com/efeciftci/9120921
+- https://stackoverflow.com/questions/45079788/recursive-descent-parser-easy-to-get-explanation
 - https://tldr.sh/
 - https://www.archlinux.org/packages/core/any/man-pages/
-- Lab examples 1 for dup2
-- Class example code for signal handling
+- https://archive.archlinux.org/repos/2019/10/04/core/os/x86_64/man-pages-5.02-1-any.pkg.tar.xz
+- Lab examples 1 for dup2 was inspiring
+- Class example code for signal handling was also inspiring
+- lab TAs helped out with pointers and mentioning useful functions
+
+Example code from here was really helpful
+- https://www.gnu.org/software/libc/manual/html_node/Line-Input.html
+- https://www.gnu.org/software/libc/manual/html_node/Dynamic-Output.html
+
+
 

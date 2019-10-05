@@ -33,7 +33,6 @@ int main(int argc, char **argv)
     {
       if (feof(stdin))
       {
-        // printf("REEEE\n");
         clearerr(stdin);
         break;
       }
