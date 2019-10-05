@@ -51,8 +51,7 @@ int main(int argc, char **argv)
     free(buffer);
   }
   // TODO other cleanup;
-  printf("REEEE\n");
   cleanup_PATH();
-  // kill_children();
+  kill_children();
   _exit(0);
 }

@@ -10,6 +10,10 @@
 
 #include "array.h"
 
+// I KNOW THIS IS BAD PRACTICE BUT THERE IS NO TIME
+extern pid_t CHILD_PIDS[];
+extern int CHILD_PIDS_SIZE;
+
 // tokenize function modified to work with the custom c array
 // we're storing pointers to the char** strings in the array
 void tokenize(char *str, const char *delim, struct array *array)
@@ -40,14 +44,16 @@ void handle_signals()
   sigaction(SIGTSTP, &sa, NULL);
 }
 
-// void kill_children()
-// {
-//   for (int i = 0; i < CHILD_PIDS->size; i += 1)
-//   {
-//     pid_t pid = *(pid_t **)get_from_array(, i);
-//     printf("%ld\n", (long)pid);
-//     kill(pid, SIGKILL); // FORCE IT
-//     waitpid(pid, NULL, 0);
-//     // kill(pid, SIGTERM); // politely tell it to end itself
-//   }
-// }
+void kill_children()
+{
+  for (int i = 0; i <= CHILD_PIDS_SIZE; i += 1)
+  {
+    if (CHILD_PIDS[i] == 0)
+    {
+      continue;
+    }
+    kill(CHILD_PIDS[i], SIGTERM); // politely tell it to end itself
+    waitpid(CHILD_PIDS[i], NULL, 0);
+    kill(CHILD_PIDS[i], SIGKILL); // FORCE IT
+  }
+}

@@ -19,6 +19,7 @@ char *is_executable(char *location, char *command)
     {
         return path;
     }
+    free(path);
     return NULL;
 }
 
@@ -60,7 +61,9 @@ char *get_absolute_path(char *command)
     {
         return c;
     }
+    free(c);
 
+    free(paths_copy);
     return NULL;
 }
 

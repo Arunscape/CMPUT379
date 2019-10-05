@@ -80,6 +80,7 @@ They will not respond
 - the user will be warned if these syntax checks fail
 - add_to_path() is then called, which takes in this argument sans the $PATH: at the
   beginning
+- it was mentioned on the forum that a2path with no arguments should clear the path. this was also implemented
 
 #### $PATH
 - after checking the assignment spec and talking to a TA, this implementation of $PATH
@@ -96,4 +97,14 @@ They will not respond
   Dragonshell will then attemp to gracefully exit
 
 #### &
-- if & is at the end of a command, we send it to the background
+- if & is at the end of a command, we redirect its output to /dev/null 
+
+
+
+# Credit
+- the strok for loops I made were inspired by these while loops https://gist.github.com/efeciftci/9120921
+- https://tldr.sh/
+- https://www.archlinux.org/packages/core/any/man-pages/
+- Lab examples 1 for dup2
+- Class example code for signal handling
+

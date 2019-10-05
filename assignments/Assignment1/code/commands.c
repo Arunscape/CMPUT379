@@ -19,6 +19,9 @@
 #include "paths.h"
 #include "util.h"
 
+pid_t CHILD_PIDS[4096];
+int CHILD_PIDS_SIZE;
+
 bool split_semicolon_and_run(char *buffer);
 bool look_for_ampersand_and_run(char *buffer);
 bool split_pipe_and_run(char *buffer, int sin, int sout, bool run_in_background);
@@ -82,10 +85,12 @@ bool split_pipe_and_run(char *buffer, int sin, int sout, bool run_in_background)
         if (process1_pid > 0)
         {
           waitpid(process1_pid, NULL, 0);
+          CHILD_PIDS_SIZE = 0;
         }
         if (process2_pid > 0)
         {
           waitpid(process2_pid, NULL, 0);
+          CHILD_PIDS_SIZE = 0;
         }
       }
     }
@@ -102,6 +107,7 @@ bool split_pipe_and_run(char *buffer, int sin, int sout, bool run_in_background)
     if (process_pid > 0)
     {
       waitpid(process_pid, NULL, 0);
+      CHILD_PIDS_SIZE = 0;
     }
   }
   return ret;
@@ -237,6 +243,8 @@ void exec_from_path(struct array *tokens, int sin, int sout, char *path, int clo
 {
   pid_t f = fork();
   *process = f;
+  CHILD_PIDS[CHILD_PIDS_SIZE] = f;
+  CHILD_PIDS_SIZE += 1;
   if (!f) // child
   {
     close(close_me);
