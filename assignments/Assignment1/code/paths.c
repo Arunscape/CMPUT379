@@ -63,7 +63,6 @@ char *get_absolute_path(char *command)
     }
     free(c);
 
-    free(paths_copy);
     return NULL;
 }
 
