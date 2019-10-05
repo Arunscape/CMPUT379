@@ -1,5 +1,5 @@
 CC = clang
-CFLAGS = -Wall -g
+CFLAGS = -Wall
 SOURCES = $(wildcard *.c)
 OBJECTS = $(SOURCES:%.c=%.o)
 
@@ -16,20 +16,19 @@ clean:
 dragonshell: welcome_dragon.h $(OBJECTS)
 	$(CC) -o dragonshell $(OBJECTS)
 
-test: leak
-# default:
-# 	clang -g -Wall dragonshell.c welcome.c commands.c -o dragonshell
 
-leak: all
-	valgrind --leak-check=full \
-		 --show-leak-kinds=all \
-		 --track-origins=yes \
-		 --verbose \
-		 ./dragonshell
-		#  --log-file=valgrind-out.txt \
+# add -g to CC flags before enabling
+# leak: all
+# 	valgrind --leak-check=full \
+# 		 --show-leak-kinds=all \
+# 		 --track-origins=yes \
+# 		 --verbose \
+# 		 ./dragonshell
+# 		#  --log-file=valgrind-out.txt \
 
 format:
 	clang-format -i *.c *.h
 
 welcome_dragon.h:
 	xxd -i welcome_dragon > welcome_dragon.h
+
