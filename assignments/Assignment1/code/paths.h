@@ -4,6 +4,7 @@
 void add_to_path(const char *path);
 void cleanup_PATH();
 void print_path();
+void clear_path();
 char *get_absolute_path(char *command);
 
 #endif // PATHS_H_

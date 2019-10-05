@@ -70,6 +70,13 @@ void add_to_path(char *path)
     {
         PATHS = strdup(path);
     }
+    else if (PATHS[0] == '\0')
+    {
+        char *tmp = PATHS;
+        PATHS = NULL;
+        asprintf(&PATHS, "%s", path);
+        free(tmp);
+    }
     else
     {
         char *tmp = PATHS;
@@ -81,9 +88,29 @@ void add_to_path(char *path)
 
 void print_path(int fd)
 {
-    dprintf(fd, "%s", PATHS);
+    if (PATHS != NULL)
+    {
+        dprintf(fd, "%s\n", PATHS);
+    }
+    else
+    {
+        dprintf(fd, "\n");
+    }
 }
 
+void clear_path()
+{
+    if (PATHS == NULL)
+    {
+        asprintf(&PATHS, "");
+    }
+    else
+    {
+        char *tmp = PATHS;
+        asprintf(&PATHS, "");
+        free(tmp);
+    }
+}
 void cleanup_PATH()
 {
     free(PATHS);

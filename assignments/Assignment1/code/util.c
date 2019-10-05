@@ -25,8 +25,8 @@ void tokenize(char *str, const char *delim, struct array *array)
 
 void signal_callback_handler(int signum)
 {
-
   fprintf(stdout, "\n");
+  // printf("\n🐲 dragonshell🐉 > ");
 }
 
 void handle_signals()
@@ -35,20 +35,19 @@ void handle_signals()
   sa.sa_flags = 0;
   sigemptyset(&sa.sa_mask);
   sa.sa_handler = signal_callback_handler;
+  // sa.sa_flags = SA_RESTART;
   sigaction(SIGINT, &sa, NULL);
   sigaction(SIGTSTP, &sa, NULL);
 }
 
-void kill_children(struct array *CHILD_PIDS)
-{
-  printf("KILLING CHILDREN\n");
-  printf("size: %d\n", CHILD_PIDS->size);
-  for (int i = 0; i < CHILD_PIDS->size; i += 1)
-  {
-    pid_t pid = *(pid_t **)get_from_array(CHILD_PIDS, i);
-    printf("%ld\n", (long)pid);
-    kill(pid, SIGKILL); // FORCE IT
-    waitpid(pid, NULL, 0);
-    // kill(pid, SIGTERM); // politely tell it to end itself
-  }
-}
+// void kill_children()
+// {
+//   for (int i = 0; i < CHILD_PIDS->size; i += 1)
+//   {
+//     pid_t pid = *(pid_t **)get_from_array(, i);
+//     printf("%ld\n", (long)pid);
+//     kill(pid, SIGKILL); // FORCE IT
+//     waitpid(pid, NULL, 0);
+//     // kill(pid, SIGTERM); // politely tell it to end itself
+//   }
+// }
