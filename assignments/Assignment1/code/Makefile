@@ -8,7 +8,7 @@ OBJECTS = $(SOURCES:%.c=%.o)
 all: dragonshell
 
 clean:
-	rm -f *.o dragonshell valgrind-out.txt welcome_dragon.h
+	rm -f *.o dragonshell valgrind-out.txt welcome_dragon.h *.out
 
 %.o: %.c
 	${CC} ${CFLAGS} -c $< -o $@
