@@ -1,0 +1,14 @@
+ _________________________________________ 
+/ Makefile array.c array.h array.o        \
+| commands.c commands.h commands.o        |
+| dragonshell dragonshell.c dragonshell.o |
+| file paths.c paths.h paths.o readme.md  |
+| util.c util.h util.o welcome.c          |
+| welcome.h welcome.o welcome_dragon      |
+\ welcome_dragon.h                        /
+ ----------------------------------------- 
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
