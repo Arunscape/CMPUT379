@@ -1,11 +1,11 @@
-CC = clang
+CC = clang++
 CFLAGS = -Wall -Werror -pthread -g
 SOURCES = $(wildcard *.c)
 OBJECTS = $(SOURCES:%.c=%.o)
 
-.PHONY: all clean test
+.PHONY: all clean
 
-all: dragonshell
+all: wc
 
 clean:
 	rm -f *.o dragonshell valgrind-out.txt *.out
@@ -13,9 +13,11 @@ clean:
 %.o: %.c
 	${CC} ${CFLAGS} -c $< -o $@
  
-dragonshell: $(OBJECTS)
-	$(CC) -o dragonshell $(OBJECTS)
+compile: $(OBJECTS)
+	$(CC) -o wordcount $(OBJECTS)
 
+wc:
+	$(CC) -o wordcount $(OBJECTS)
 
 leak: all
 	valgrind --leak-check=full \

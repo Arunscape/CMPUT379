@@ -1,26 +1,6 @@
-#ifndef THREADPOOL_H
-#define THREADPOOL_H
-#include <pthread.h>
-#include <stdbool.h>
-
-typedef void (*thread_func_t)(void *arg);
-
-typedef struct ThreadPool_work_t {
-    thread_func_t func;              // The function pointer
-    void *arg;                       // The arguments for the function
-    // TODO: Add other members here if needed
-} ThreadPool_work_t;
-
-typedef struct {
-    // TODO: Add members here
-} ThreadPool_work_queue_t;
-
-typedef struct {
-    // TODO: Add members here
-  int num_threads;
-} ThreadPool_t;
-
-
+#include <iostream>
+#include "threadpool.h"
+#include "reeeee.h"
 /**
 * A C style constructor for creating a new ThreadPool object
 * Parameters:
@@ -28,7 +8,23 @@ typedef struct {
 * Return:
 *     ThreadPool_t* - The pointer to the newly created ThreadPool object
 */
-ThreadPool_t *ThreadPool_create(int num);
+ThreadPool_t *ThreadPool_create(int num)
+{
+
+  if (num <= 0)
+  {
+    REEEEE("ERROR: ThreadPool_create num of threads entered was <=0");
+  }
+  // create thread
+  ThreadPool_t *threadpool;
+  if ((threadpool = (ThreadPool_t *)malloc(sizeof(ThreadPool_t))) == NULL)
+  {
+    REEEEE("ERROR: could not allocate space for the threadpool");
+  }
+  threadpool->num_threads = num;
+
+  return threadpool;
+}
 
 /**
 * A C style destructor to destroy a ThreadPool object
@@ -64,4 +60,3 @@ ThreadPool_work_t *ThreadPool_get_work(ThreadPool_t *tp);
 *     tp - The ThreadPool Object this thread belongs to
 */
 void *Thread_run(ThreadPool_t *tp);
-#endif
