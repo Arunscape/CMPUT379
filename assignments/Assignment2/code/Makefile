@@ -1,23 +1,27 @@
-CC = clang++
-CFLAGS = -Wall -Werror -pthread -g
-SOURCES = $(wildcard *.c)
-OBJECTS = $(SOURCES:%.c=%.o)
+CC = clang++ -pthread
+CFLAGS = -Wall -Werror -g
+SOURCES = $(wildcard *.cpp)
+OBJECTS = $(SOURCES:%.cpp=%.o)
 
-.PHONY: all clean
+.PHONY: clean
 
-all: wc
+# todo make default wc
+.DEFAULT_GOAL := compile
 
 clean:
-	rm -f *.o dragonshell valgrind-out.txt *.out
+	rm -f *.o wordcount valgrind-out.txt *.out
 
-%.o: %.c
+%.o: %.cpp
 	${CC} ${CFLAGS} -c $< -o $@
+
+#distwc.o: distwc.c
+#	${CC} ${CFLAGS} -c -x c distwc.c -o distwc.o
  
-compile: $(OBJECTS)
-	$(CC) -o wordcount $(OBJECTS)
+compile: $(OBJECTS) #distwc.o
+	$(CC) -o wordcount $(OBJECTS) #distwc.o
 
 wc:
-	$(CC) -o wordcount $(OBJECTS)
+	$(CC) -o wordcount $(OBJECTS) #distwc.o
 
 leak: all
 	valgrind --leak-check=full \
@@ -30,3 +34,5 @@ leak: all
 format:
 	clang-format -i *.c *.h
 
+#todo 
+# compress: 

@@ -1,62 +1,86 @@
-#include <iostream>
 #include "threadpool.h"
 #include "reeeee.h"
-/**
-* A C style constructor for creating a new ThreadPool object
-* Parameters:
-*     num - The number of threads to create
-* Return:
-*     ThreadPool_t* - The pointer to the newly created ThreadPool object
-*/
-ThreadPool_t *ThreadPool_create(int num)
-{
 
-  if (num <= 0)
-  {
+void *Thread_run(void *tp);
+
+/**
+ * A C style constructor for creating a new ThreadPool object
+ * Parameters:
+ *     num - The number of threads to create
+ * Return:
+ *     ThreadPool_t* - The pointer to the newly created ThreadPool object
+ */
+ThreadPool_t *ThreadPool_create(int num) {
+
+  if (num <= 0) {
     REEEEE("ERROR: ThreadPool_create num of threads entered was <=0");
   }
   // create thread
-  ThreadPool_t *threadpool;
-  if ((threadpool = (ThreadPool_t *)malloc(sizeof(ThreadPool_t))) == NULL)
-  {
-    REEEEE("ERROR: could not allocate space for the threadpool");
+  ThreadPool_t *threadpool = new ThreadPool_t();
+
+  for (int i=0; i<=num; i+=1){
+    pthread_t thread;
+    pthread_create(&thread, NULL, Thread_run, NULL);
+    threadpool->threads.push_back(thread);
   }
-  threadpool->num_threads = num;
+
+  pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+  if(pthread_mutex_init(&mutex, NULL) != 0){
+        REEEEE("ERROR: Could not init mutex");
+    }
 
   return threadpool;
 }
 
 /**
-* A C style destructor to destroy a ThreadPool object
-* Parameters:
-*     tp - The pointer to the ThreadPool object to be destroyed
-*/
-void ThreadPool_destroy(ThreadPool_t *tp);
+ * A C style destructor to destroy a ThreadPool object
+ * Parameters:
+ *     tp - The pointer to the ThreadPool object to be destroyed
+ */
+void ThreadPool_destroy(ThreadPool_t *tp){
+  delete tp;
+  pthread_mutex_destroy()
+};
 
 /**
-* Add a task to the ThreadPool's task queue
-* Parameters:
-*     tp   - The ThreadPool object to add the task to
-*     func - The function pointer that will be called in the thread
-*     arg  - The arguments for the function
-* Return:
-*     true  - If successful
-*     false - Otherwise
-*/
-bool ThreadPool_add_work(ThreadPool_t *tp, thread_func_t func, void *arg);
+ * Add a task to the ThreadPool's task queue
+ * Parameters:
+ *     tp   - The ThreadPool object to add the task to
+ *     func - The function pointer that will be called in the thread
+ *     arg  - The arguments for the function
+ * Return:
+ *     true  - If successful
+ *     false - Otherwise
+ */
+bool ThreadPool_add_work(ThreadPool_t *tp, thread_func_t func, void *arg){
+  
+  ThreadPool_work_t* task = new ThreadPool_work_t();
+  task->func = func;
+  task->arg = arg;
+  
+  tp->tasks.work.push(*task);
+};
 
 /**
-* Get a task from the given ThreadPool object
-* Parameters:
-*     tp - The ThreadPool object being passed
-* Return:
-*     ThreadPool_work_t* - The next task to run
-*/
+ * Get a task from the given ThreadPool object
+ * Parameters:
+ *     tp - The ThreadPool object being passed
+ * Return:
+ *     ThreadPool_work_t* - The next task to run
+ */
 ThreadPool_work_t *ThreadPool_get_work(ThreadPool_t *tp);
 
 /**
-* Run the next task from the task queue
-* Parameters:
-*     tp - The ThreadPool Object this thread belongs to
-*/
-void *Thread_run(ThreadPool_t *tp);
+ * Run the next task from the task queue
+ * Parameters:
+ *     tp - The ThreadPool Object this thread belongs to
+ */
+void *Thread_run(void *tp){
+  ThreadPool_t* threadpool = (ThreadPool_t*) tp;
+
+  for (;;){
+     // get a task from the task queue and execute it
+  }
+  pthread_exit(NULL);
+  return NULL;
+}

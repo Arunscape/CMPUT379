@@ -1,0 +1,5 @@
+pseudocode
+trace through code
+semaphores
+check eclass
+

@@ -1,7 +1,8 @@
 #ifndef THREADPOOL_H
 #define THREADPOOL_H
+#include <queue>
+#include <vector>
 #include <pthread.h>
-#include <stdbool.h>
 
 typedef void (*thread_func_t)(void *arg);
 
@@ -13,11 +14,14 @@ typedef struct ThreadPool_work_t {
 
 typedef struct {
     // TODO: Add members here
+  std::queue<ThreadPool_work_t> work;
 } ThreadPool_work_queue_t;
 
 typedef struct {
     // TODO: Add members here
-  int num_threads;
+  std::vector<pthread_t> threads;
+  ThreadPool_work_queue_t tasks;
+  pthread_mutex_t mutex;
 } ThreadPool_t;
 
 
