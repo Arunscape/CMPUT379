@@ -30,6 +30,8 @@ ThreadPool_t *ThreadPool_create(int num) {
         REEEEE("ERROR: Could not init mutex");
   }
 
+  threadpool->workavailable = PTHREAD_COND_INITIALIZER
+
   return threadpool;
 }
 
@@ -62,6 +64,7 @@ bool ThreadPool_add_work(ThreadPool_t *tp, thread_func_t func, void *arg){
   
   pthread_mutex_lock(&(tp->mutex));
   tp->tasks.work.push(task);
+  pthread_cond_signal(&(tp->workavailable));
   pthread_mutex_unlock(&(tp->mutex));
 
   return true;
@@ -78,6 +81,12 @@ bool ThreadPool_add_work(ThreadPool_t *tp, thread_func_t func, void *arg){
  */
 ThreadPool_work_t* ThreadPool_get_work(ThreadPool_t *tp){
     pthread_mutex_lock(&(tp->mutex));
+
+    while(tp->tasks.work.size() <= 0){
+      pthread_cond_wait(&(tp->workavailable), &(tp->mutex));
+    }
+    
+    // I could get rid of this if statement
     if (tp->tasks.work.size() > 0){
       ThreadPool_work_t* t =  tp->tasks.work.front();
       tp->tasks.work.pop();

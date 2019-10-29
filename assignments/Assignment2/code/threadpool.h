@@ -20,8 +20,10 @@ typedef struct {
 typedef struct {
     // TODO: Add members here
   //std::vector<pthread_t> threads;
+
   ThreadPool_work_queue_t tasks;
   pthread_mutex_t mutex;
+  pthread_cond_t workavailable;
 } ThreadPool_t;
 
 
