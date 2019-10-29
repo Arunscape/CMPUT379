@@ -20,26 +20,28 @@ ThreadPool_t *ThreadPool_create(int num) {
 
   for (int i=0; i<=num; i+=1){
     pthread_t thread;
-    pthread_create(&thread, NULL, Thread_run, NULL);
-    threadpool->threads.push_back(thread);
+    pthread_create(&thread, NULL, Thread_run, threadpool);
+//    threadpool->threads.push_back(thread);
+//    the threads maybe don't even need to be stored.
   }
 
-  pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-  if(pthread_mutex_init(&mutex, NULL) != 0){
+  threadpool->mutex = PTHREAD_MUTEX_INITIALIZER;
+  if(pthread_mutex_init(&(threadpool->mutex), NULL) != 0){
         REEEEE("ERROR: Could not init mutex");
-    }
+  }
 
   return threadpool;
 }
 
 /**
  * A C style destructor to destroy a ThreadPool object
- * Parameters:
+ * Parameters*:
  *     tp - The pointer to the ThreadPool object to be destroyed
  */
 void ThreadPool_destroy(ThreadPool_t *tp){
   delete tp;
-  pthread_mutex_destroy()
+  pthread_mutex_destroy(&(tp->mutex));
+  // todo delete queue of pointers
 };
 
 /**
@@ -58,7 +60,13 @@ bool ThreadPool_add_work(ThreadPool_t *tp, thread_func_t func, void *arg){
   task->func = func;
   task->arg = arg;
   
-  tp->tasks.work.push(*task);
+  pthread_mutex_lock(&(tp->mutex));
+  tp->tasks.work.push(task);
+  pthread_mutex_unlock(&(tp->mutex));
+
+  return true;
+
+  // TODO if error, return false
 };
 
 /**
@@ -68,7 +76,16 @@ bool ThreadPool_add_work(ThreadPool_t *tp, thread_func_t func, void *arg){
  * Return:
  *     ThreadPool_work_t* - The next task to run
  */
-ThreadPool_work_t *ThreadPool_get_work(ThreadPool_t *tp);
+ThreadPool_work_t* ThreadPool_get_work(ThreadPool_t *tp){
+    pthread_mutex_lock(&(tp->mutex));
+    if (tp->tasks.work.size() > 0){
+      ThreadPool_work_t* t =  tp->tasks.work.front();
+      tp->tasks.work.pop();
+      return t;
+      pthread_mutex_unlock(&(tp->mutex));
+    }
+    return NULL;
+};
 
 /**
  * Run the next task from the task queue
@@ -80,6 +97,10 @@ void *Thread_run(void *tp){
 
   for (;;){
      // get a task from the task queue and execute it
+     ThreadPool_work_t* task = ThreadPool_get_work(threadpool);
+     if (task != NULL){
+        (task->func)(task->arg);
+     }
   }
   pthread_exit(NULL);
   return NULL;

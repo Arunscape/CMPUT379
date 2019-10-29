@@ -14,12 +14,12 @@ typedef struct ThreadPool_work_t {
 
 typedef struct {
     // TODO: Add members here
-  std::queue<ThreadPool_work_t> work;
+  std::queue<ThreadPool_work_t*> work;
 } ThreadPool_work_queue_t;
 
 typedef struct {
     // TODO: Add members here
-  std::vector<pthread_t> threads;
+  //std::vector<pthread_t> threads;
   ThreadPool_work_queue_t tasks;
   pthread_mutex_t mutex;
 } ThreadPool_t;
@@ -60,7 +60,7 @@ bool ThreadPool_add_work(ThreadPool_t *tp, thread_func_t func, void *arg);
 * Return:
 *     ThreadPool_work_t* - The next task to run
 */
-ThreadPool_work_t *ThreadPool_get_work(ThreadPool_t *tp);
+ThreadPool_work_t* ThreadPool_get_work(ThreadPool_t *tp);
 
 /**
 * Run the next task from the task queue
