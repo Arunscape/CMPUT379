@@ -50,7 +50,8 @@ void MR_Run(int num_files, char *filenames[],
 
   if ( false ){ // k files are processed
     for(pthread_t &t: threadpool->threads){
-    pthread_join(t, NULL);
+      pthread_join(t, NULL);
+    }
   }
 }
 
