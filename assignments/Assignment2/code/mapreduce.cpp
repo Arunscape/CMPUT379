@@ -14,6 +14,9 @@ struct partition;
 // std::vector<std::vector<std::pair<char*, char*>>> shared_data;
 std::vector<partition> shared_data;
 
+// number of reducers
+int R;
+
 struct partition {
   pthread_mutex_t mutex;
   //         KEY          VALUE
@@ -40,6 +43,10 @@ void MR_Run(int num_files, char *filenames[],
     }
       
   }
+  if (num_reducers <= 0){
+    REEEEE("You need at least one or more reducers!");
+  }
+  R = num_reducers;
 }
 
 // this function was copied from the assignment description
@@ -52,27 +59,33 @@ unsigned long MR_Partition(char* key, int num_partitions){
 }
 
 
-bool compareByLength(const data &a, const data &b)
-{
-    return a.word.size() < b.word.size();
-}
-
 void MR_Emit(char *key, char *value){
-  unsigned long partno = MR_Partition(key, num_partitions);
+
+    // maps the key to an integer between 0 and R-1
+  unsigned long partno = MR_Partition(key, R-1); 
   std::pair<char*, char*> pair = std::make_pair(key, value);
 
-  pthread_mutex_lock(&shared_data[partno]->mutex)
-  shared_data[partno].insert(
-        std::upper_bound(shared_date[partno].cbegin(), shared_data[partno].cend(), pair),
+  pthread_mutex_lock(&shared_data[partno].mutex);
+  // std::pair implements operator, so this should sort by key first then value in ascending order
+  shared_data[partno].pairs.insert(
+        std::upper_bound(shared_data[partno].pairs.cbegin(), shared_data[partno].pairs.cend(), pair),
         pair
       );
-  pthread_mutex_unlock(&shared_data[partno]->mutex)
+  pthread_mutex_unlock(&shared_data[partno].mutex);
 }
 
 void MR_ProcessPartition(int partition_number){
-  ;
+ // run the user defined Reduce function
+ // on the next unprocessed key in the given partition in a loop
+ // (Reduce is only invoked once per key)
+  for (;;){
+    
+  }
 }
 
 char *MR_GetNext(char *key, int partition_number){
-  return 0;
+  // called by the user provided Reducer function 
+  // returns the next value associated with a given key in the sorted partition
+  // returns NULL when the keys's values have been sorted correctly
 }
+
