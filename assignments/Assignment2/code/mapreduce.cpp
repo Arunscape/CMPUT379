@@ -1,6 +1,26 @@
+#include <vector>
+#include <utility>
+#include <pthread.h>
+
 #include "mapreduce.h"
 #include "threadpool.h"
 #include "reeeee.h"
+
+
+//datastruct| partition|           key    value
+std::vector<std::vector<std::pair<char*, char*>>> shared_data;
+
+struct partition {
+  pthread_mutex_t mutex;
+  //         KEY          VALUE
+  std::vector<std::pair<const char*, const char*>> pairs;
+
+  partition(){
+    mutex = PTHREAD_MUTEX_INITIALIZER;
+    pairs = std::vector<std::pair<const char*, const char*>>();
+  }
+
+};
 
 void MR_Run(int num_files, char *filenames[],
             Mapper map, int num_mappers,
