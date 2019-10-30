@@ -9,8 +9,6 @@ bool LessThanByFileSize::operator()(const ThreadPool_work_t* t1, const ThreadPoo
       REEEEE("ERROR: One of the work items was null");
 }
 
-
-    
     struct stat s1;
     struct stat s2;
 
@@ -106,8 +104,8 @@ ThreadPool_work_t* ThreadPool_get_work(ThreadPool_t *tp){
     
     ThreadPool_work_t* t =  tp->tasks.work.top();
     tp->tasks.work.pop();
-    return t;
     pthread_mutex_unlock(&(tp->mutex));
+    return t;
 };
 
 /**
@@ -122,6 +120,7 @@ void *Thread_run(void *tp){
      // get a task from the task queue and execute it
      ThreadPool_work_t* task = ThreadPool_get_work(threadpool);
      (task->func)(task->arg);
+     delete task;
   }
   pthread_exit(NULL);
   return NULL;
