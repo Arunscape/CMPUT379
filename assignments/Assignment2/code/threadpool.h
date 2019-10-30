@@ -12,9 +12,13 @@ typedef struct ThreadPool_work_t {
     // TODO: Add other members here if needed
 } ThreadPool_work_t;
 
+struct LessThanByFileSize{
+  bool operator()(const ThreadPool_work_t* t1, const ThreadPool_work_t* t2) const;
+};
+
 typedef struct {
     // TODO: Add members here
-  std::priority_queue<ThreadPool_work_t*> work;
+  std::priority_queue<ThreadPool_work_t*, std::vector<ThreadPool_work_t*>, LessThanByFileSize> work;
 } ThreadPool_work_queue_t;
 
 typedef struct {

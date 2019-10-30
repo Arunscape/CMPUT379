@@ -1,7 +1,25 @@
 #include "threadpool.h"
 #include "reeeee.h"
+#include <sys/stat.h>
 
 void *Thread_run(void *tp);
+
+bool LessThanByFileSize::operator()(const ThreadPool_work_t* t1, const ThreadPool_work_t* t2) const {
+    if (t1 == NULL || t2 == NULL){
+      REEEEE("ERROR: One of the work items was null");
+}
+
+
+    
+    struct stat s1;
+    struct stat s2;
+
+    if (stat((const char*)t1->arg, &s1) == 0 && stat((const char*)t2->arg, &s2)){
+      return s1.st_size < s2.st_size;
+    }
+    REEEEE("ERROR could not read file size");
+    return false; // REE will sys.exit(1) so this is to supporess a clang warning
+};
 
 /**
  * A C style constructor for creating a new ThreadPool object
