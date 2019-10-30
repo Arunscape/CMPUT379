@@ -39,7 +39,7 @@ ThreadPool_t *ThreadPool_create(int num) {
   for (int i=0; i<=num; i+=1){
     pthread_t thread;
     pthread_create(&thread, NULL, Thread_run, threadpool);
-//    threadpool->threads.push_back(thread);
+    threadpool->threads.push_back(thread);
 //    the threads maybe don't even need to be stored.
   }
 

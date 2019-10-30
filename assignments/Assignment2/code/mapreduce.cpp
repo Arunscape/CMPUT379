@@ -36,17 +36,22 @@ void MR_Run(int num_files, char *filenames[],
   
   ThreadPool_t* threadpool = ThreadPool_create(num_mappers);
 
+  if (num_reducers <= 0){
+    REEEEE("You need at least one or more reducers!");
+  }
+  R = num_reducers;
+
   for (int i=0; i < num_files; i+=1){
     bool addedwork = ThreadPool_add_work(threadpool,(thread_func_t) map, filenames[i]);
     if (!addedwork){
       REEEEE("Error adding work to threadpool");
     }
-      
   }
-  if (num_reducers <= 0){
-    REEEEE("You need at least one or more reducers!");
+
+  if ( false ){ // k files are processed
+    for(pthread_t &t: threadpool->threads){
+    pthread_join(t, NULL);
   }
-  R = num_reducers;
 }
 
 // this function was copied from the assignment description
@@ -65,6 +70,7 @@ void MR_Emit(char *key, char *value){
   unsigned long partno = MR_Partition(key, R-1); 
   std::pair<char*, char*> pair = std::make_pair(key, value);
 
+  // fine grained lock which locks only the partition being modified, and not the entire shared data structure
   pthread_mutex_lock(&shared_data[partno].mutex);
   // std::pair implements operator, so this should sort by key first then value in ascending order
   shared_data[partno].pairs.insert(
