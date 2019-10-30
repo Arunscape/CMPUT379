@@ -57,9 +57,22 @@ ThreadPool_t *ThreadPool_create(int num) {
  *     tp - The pointer to the ThreadPool object to be destroyed
  */
 void ThreadPool_destroy(ThreadPool_t *tp){
-  delete tp;
+  
+  // ?? somehow signal to them that the threads need to exit. 
+  pthread_mutex_lock(&(tp->mutex));
+  tp->done = true;
+  pthread_cond_signal(&(tp->workavailable));
+  pthread_mutex_unlock(&(tp->mutex));
+  
+  // wait for them to finish
+  for(pthread_t &t: tp->threads){
+    pthread_join(t, NULL);
+  }
+
+
+  // delete it
   pthread_mutex_destroy(&(tp->mutex));
-  // todo delete queue of pointers
+  delete tp;
 };
 
 /**
@@ -99,6 +112,9 @@ ThreadPool_work_t* ThreadPool_get_work(ThreadPool_t *tp){
     pthread_mutex_lock(&(tp->mutex));
 
     while(!(tp->tasks.work.size() > 0)){
+      if(tp->done){
+        pthread_exit(NULL);
+      }
       pthread_cond_wait(&(tp->workavailable), &(tp->mutex));
     }
     
