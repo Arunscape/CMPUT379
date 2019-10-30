@@ -14,7 +14,7 @@ typedef struct ThreadPool_work_t {
 
 typedef struct {
     // TODO: Add members here
-  std::queue<ThreadPool_work_t*> work;
+  std::priority_queue<ThreadPool_work_t*> work;
 } ThreadPool_work_queue_t;
 
 typedef struct {

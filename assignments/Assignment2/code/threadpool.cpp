@@ -86,7 +86,7 @@ ThreadPool_work_t* ThreadPool_get_work(ThreadPool_t *tp){
       pthread_cond_wait(&(tp->workavailable), &(tp->mutex));
     }
     
-    ThreadPool_work_t* t =  tp->tasks.work.front();
+    ThreadPool_work_t* t =  tp->tasks.work.top();
     tp->tasks.work.pop();
     return t;
     pthread_mutex_unlock(&(tp->mutex));
