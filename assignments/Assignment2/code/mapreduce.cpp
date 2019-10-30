@@ -9,6 +9,7 @@
 #include "reeeee.h"
 
 struct partition;
+void* wrapper_function_because_we_cant_change_the_fucking_signature(void*);
 
 //datastruct| partition|           key    value
 // std::vector<std::vector<std::pair<char*, char*>>> shared_data;
@@ -20,11 +21,11 @@ int R;
 struct partition {
   pthread_mutex_t mutex;
   //         KEY          VALUE
-  std::vector<std::pair<const char*, const char*>> pairs;
+  std::vector<std::pair<char*, char*>> pairs;
 
   partition(){
     mutex = PTHREAD_MUTEX_INITIALIZER;
-    pairs = std::vector<std::pair<const char*, const char*>>();
+    pairs = std::vector<std::pair<char*, char*>>();
   }
 
 };
@@ -42,7 +43,7 @@ void MR_Run(int num_files, char *filenames[],
   R = num_reducers;
 
   for (int i=0; i < num_files; i+=1){
-    bool addedwork = ThreadPool_add_work(threadpool,(thread_func_t) map, filenames[i]);
+    bool addedwork = ThreadPool_add_work(threadpool,(thread_func_t) concate, &shared_data[i]);
     if (!addedwork){
       REEEEE("Error adding work to threadpool");
     }
@@ -56,6 +57,16 @@ void MR_Run(int num_files, char *filenames[],
 
   // wait for threads to finish then destroy the pool
   ThreadPool_destroy(threadpool);
+
+
+  // create R reducer threads
+  ThreadPool_t* reducer_threadpool = ThreadPool_create(num_reducers);
+  for(intptr_t i=0; i<= num_reducers; i+=1){
+    bool addedwork = ThreadPool_add_work(reducer_threadpool,(thread_func_t) wrapper_function_because_we_cant_change_the_fucking_signature, (void*) i);
+    if (!addedwork){
+      REEEEE("Error adding work to threadpool");
+    }
+  }
 
 }
 
@@ -85,12 +96,19 @@ void MR_Emit(char *key, char *value){
   pthread_mutex_unlock(&shared_data[partno].mutex);
 }
 
+// sorry, please excuse the name of this function
+void* wrapper_function_because_we_cant_change_the_fucking_signature(void* p){
+  int partno = (intptr_t) p;
+
+  MR_ProcessPartition(partno);
+  return NULL;
+}
 void MR_ProcessPartition(int partition_number){
  // run the user defined Reduce function
  // on the next unprocessed key in the given partition in a loop
  // (Reduce is only invoked once per key)
   for (;;){
-    
+    // char* next_key = MR_GetNext(what, partition_number);
   }
 }
 
@@ -98,5 +116,6 @@ char *MR_GetNext(char *key, int partition_number){
   // called by the user provided Reducer function 
   // returns the next value associated with a given key in the sorted partition
   // returns NULL when the keys's values have been sorted correctly
+  return NULL;
 }
 
