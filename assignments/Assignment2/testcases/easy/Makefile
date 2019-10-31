@@ -8,8 +8,8 @@ $(TARGET): ../threadpool.o ../mapreduce.o distwc.o ../reeeee.o
 	$(CC) $(WARN) $(CCOPTS) $^ -o $@ $(LIB)
 	g++ -o validation validation.cc -std=c++11 -Wall -O3
 
-%.o: %.c
-	$(CC) $(WARN) $(CCOPTS) $< -c $(LIB)
+#%.o: %.c
+#	$(CC) $(WARN) $(CCOPTS) $< -c $(LIB)
 
 
 %.o: %.cpp
