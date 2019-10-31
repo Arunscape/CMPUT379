@@ -47,7 +47,7 @@ void MR_Run(int num_files, char *filenames[],
   reducer_function = concate;
 
   for (int i=0; i < num_files; i+=1){
-    bool addedwork = ThreadPool_add_work(threadpool,(thread_func_t) concate, &shared_data[i]);
+    bool addedwork = ThreadPool_add_work(threadpool,(thread_func_t) map, &shared_data[i]);
     if (!addedwork){
       REEEEE("Error adding work to threadpool");
     }
