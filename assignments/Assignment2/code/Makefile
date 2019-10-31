@@ -34,5 +34,8 @@ leak: all
 format:
 	clang-format -i *.c *.h
 
+cptest:
+	cp -f reeeee.cpp reeeee.h mapreduce.cpp mapreduce.h threadpool.cpp threadpool.h ../testcases
+
 #todo 
 # compress: 

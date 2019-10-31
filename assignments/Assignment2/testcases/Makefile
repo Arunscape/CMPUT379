@@ -1,7 +1,7 @@
-CC:=gcc
+CC:=clang++
 WARN:=-Wall 
 LIB:=-lm -pthread -O3
-CCOPTS:=-std=c99 -ggdb -D_GNU_SOURCE
+CCOPTS:=-std=c++11 -ggdb -D_GNU_SOURCE
 TARGET:=distwc
 
 all: threadpool.o mapreduce.o
@@ -12,5 +12,6 @@ all: threadpool.o mapreduce.o
 clean-all:
 	rm -rf *.o *.gch $(TARGET)
 
-threadpool.o: threadpool.c threadpool.h
-mapreduce.o: mapreduce.c mapreduce.h threadpool.h
+threadpool.o: threadpool.cpp threadpool.h reeeee.h
+mapreduce.o: mapreduce.cpp mapreduce.h threadpool.h reeeee.h
+reeeee.o: reeeee.cpp reeeee.h
