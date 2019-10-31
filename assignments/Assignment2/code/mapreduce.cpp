@@ -126,17 +126,25 @@ void MR_ProcessPartition(int partition_number){
     return lhs.first < rhs.first;
   };
 
-  pthread_mutex_lock(&shared_data[partition_number].mutex);
+  // each thread accesses its own partition, so no mutex needed!
+  //pthread_mutex_lock(&shared_data[partition_number].mutex);
   for (auto it = shared_data[partition_number].pairs.begin(); it != shared_data[partition_number].pairs.end(); it = std::upper_bound(it, shared_data[partition_number].pairs.end(), *it, compareKey)){
         reducer_function(it->first, partition_number);
   }
-  pthread_mutex_unlock(&shared_data[partition_number].mutex);
+  // pthread_mutex_unlock(&shared_data[partition_number].mutex);
 }
 
 char *MR_GetNext(char *key, int partition_number){
   // called by the user provided Reducer function 
   // returns the next value associated with a given key in the sorted partition
   // returns NULL when the keys's values have been sorted correctly
-  return NULL;
+
+  auto it = shared_data[partition_number].pairs.find(key);
+  if (it == shared_data[partition_number].pairs.end()){
+    return NULL;
+  }
+  char* value = it->second;
+  shared_data[partition_number].pairs.erase(it);
+  return value;
 }
 
