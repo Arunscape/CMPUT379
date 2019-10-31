@@ -12,9 +12,10 @@ bool LessThanByFileSize::operator()(const ThreadPool_work_t* t1, const ThreadPoo
     struct stat s1;
     struct stat s2;
 
-    if (stat((const char*)t1->arg, &s1) == 0 && stat((const char*)t2->arg, &s2)){
+    if (stat((const char*)t1->arg, &s1) == 0 && stat((const char*)t2->arg, &s2) == 0){
       return s1.st_size < s2.st_size;
     }
+    perror("stat()");
     REEEEE("ERROR could not read file size");
     return false; // REE will sys.exit(1) so this is to supporess a clang warning
 };

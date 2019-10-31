@@ -41,13 +41,18 @@ void MR_Run(int num_files, char *filenames[],
   ThreadPool_t* threadpool = ThreadPool_create(num_mappers);
 
   if (num_reducers <= 0){
-    REEEEE("You need at least one or more reducers!");
+    REEEEE("ERROR: You need at least one or more reducers!");
   }
+
+  if (num_files <= 0){
+    REEEEE("ERROR: Need to process at least one file!");
+  }
+
   R = num_reducers;
   reducer_function = concate;
 
   for (int i=0; i < num_files; i+=1){
-    bool addedwork = ThreadPool_add_work(threadpool,(thread_func_t) map, &shared_data[i]);
+    bool addedwork = ThreadPool_add_work(threadpool,(thread_func_t) map, filenames[i]);
     if (!addedwork){
       REEEEE("Error adding work to threadpool");
     }
