@@ -38,7 +38,6 @@ ThreadPool_t *ThreadPool_create(int num) {
     pthread_t thread;
     pthread_create(&thread, NULL, Thread_run, threadpool);
     threadpool->threads.push_back(thread);
-//    the threads maybe don't even need to be stored.
   }
 
   threadpool->mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -47,7 +46,7 @@ ThreadPool_t *ThreadPool_create(int num) {
   }
 
   threadpool->workavailable = PTHREAD_COND_INITIALIZER;
-
+  
   return threadpool;
 }
 

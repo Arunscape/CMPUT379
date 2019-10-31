@@ -53,15 +53,7 @@ void MR_Run(int num_files, char *filenames[],
     }
   }
 
-  //if ( false ){ // k files are processed
-  //  for(pthread_t &t: threadpool->threads){
-  //    pthread_join(t, NULL);
-  //  }
-  //}
-
-  // wait for threads to finish then destroy the pool
   ThreadPool_destroy(threadpool);
-
 
   // create R reducer threads
   ThreadPool_t* reducer_threadpool = ThreadPool_create(num_reducers);
