@@ -48,6 +48,10 @@ void MR_Run(int num_files, char *filenames[], Mapper map, int num_mappers,
 
   R = num_reducers;
   reducer_function = concate;
+  for (int i = 0; i< num_reducers; i+=1){
+    partition *p = new partition();
+    shared_data.push_back(*p);
+  }
 
   for (int i = 0; i < num_files; i += 1) {
     bool addedwork =
@@ -96,7 +100,7 @@ void MR_Emit(char *key, char *value) {
   pthread_mutex_lock(&shared_data[partno].mutex);
   // std::pair implements operator, so this should sort by key first then value
   // in ascending order
-  shared_data[partno].pairs.insert(std::make_pair(key, value));
+  shared_data[partno].pairs.insert(std::make_pair(strdup(key), strdup(value)));
   pthread_mutex_unlock(&shared_data[partno].mutex);
 }
 
