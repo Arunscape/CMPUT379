@@ -12,7 +12,7 @@ bool LessThanByFileSize::operator()(const ThreadPool_work_t* t1, const ThreadPoo
     struct stat s1;
     struct stat s2;
 
-    if (stat((char*)t1->arg, &s1) == 0 && stat((char*)t2->arg, &s2)){
+    if (stat((const char*)t1->arg, &s1) == 0 && stat((const char*)t2->arg, &s2)){
       return s1.st_size < s2.st_size;
     }
     REEEEE("ERROR could not read file size");
@@ -64,9 +64,10 @@ void ThreadPool_destroy(ThreadPool_t *tp){
   pthread_mutex_unlock(&(tp->mutex));
   
   // wait for them to finish
-//  for(pthread_t &t: tp->threads){
-   // pthread_join(t, NULL);
-  //}
+  for(pthread_t &t: tp->threads){
+    pthread_join(t, NULL);
+  }
+
 
   // delete it
   pthread_mutex_destroy(&(tp->mutex));
