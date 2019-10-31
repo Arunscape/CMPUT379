@@ -23,18 +23,18 @@ compile: $(OBJECTS) #distwc.o
 wc:
 	$(CC) -o wordcount $(OBJECTS) #distwc.o
 
-leak: all
+leak: compile
 	valgrind --leak-check=full \
  		 --show-leak-kinds=all \
 		 --track-origins=yes \
  		 --verbose \
- 		 ./dragonshell
+ 		 ./wordcount
 	#  --log-file=valgrind-out.txt \
 
 format:
 	clang-format -i *.c *.h
 
-cptest:
+cptest: compile
 	cp -f reeeee.cpp reeeee.h mapreduce.cpp mapreduce.h threadpool.cpp threadpool.h ../testcases
 
 #todo 

@@ -1,12 +1,15 @@
-CC:=clang++
+CC:=g++
 WARN:=-Wall 
-LIB:=-lm -pthread -O3
+LIB:=-lm -pthread -g
 CCOPTS:=-std=c++11 -ggdb -D_GNU_SOURCE
 TARGET:=distwc
 
 all: threadpool.o mapreduce.o
 
 %.o: %.c
+	$(CC) $(WARN) $(CCOPTS) $< -c $(LIB)
+
+%.o: %.cpp
 	$(CC) $(WARN) $(CCOPTS) $< -c $(LIB)
 
 clean-all:

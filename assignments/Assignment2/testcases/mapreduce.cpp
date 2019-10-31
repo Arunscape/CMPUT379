@@ -5,6 +5,7 @@
 #include <vector>
 
 #include <pthread.h>
+#include <string.h>
 
 #include "mapreduce.h"
 #include "reeeee.h"
@@ -88,7 +89,7 @@ unsigned long MR_Partition(char *key, int num_partitions) {
 void MR_Emit(char *key, char *value) {
 
   // maps the key to an integer between 0 and R-1
-  unsigned long partno = MR_Partition(key, R - 1);
+  unsigned long partno = MR_Partition(key, R);
 
   // fine grained lock which locks only the partition being modified, and not
   // the entire shared data structure
@@ -110,14 +111,6 @@ void MR_ProcessPartition(int partition_number) {
   // run the user defined Reduce function
   // on the next unprocessed key in the given partition in a loop
   // (Reduce is only invoked once per key)
-  //
-  // where do we get the key???
-
-  // for (char* next = MR_GetNext(key, partition_number) ; next != NULL; next =
-  // MR_GetNext(key, partition_number){
-  // // char* next_key = MR_GetNext(what, partition_number);
-  //  (reducer_function)(next);
-  //}
 
   // https://stackoverflow.com/questions/9371236/is-there-an-iterator-across-unique-keys-in-a-stdmultimap
   // checking only the keys first allows for a O(n) operation instead of
@@ -147,7 +140,7 @@ char *MR_GetNext(char *key, int partition_number) {
   if (it == shared_data[partition_number].pairs.end()) {
     return NULL;
   }
-  char *value = it->second;
+  char *value = strdup(it->second);
   shared_data[partition_number].pairs.erase(it);
   return value;
 }

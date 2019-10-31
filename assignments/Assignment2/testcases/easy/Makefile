@@ -1,6 +1,6 @@
-CC:=clang++
+CC:=g++
 WARN:=-Wall 
-LIB:=-lm -pthread -O3
+LIB:=-lm -pthread -g
 CCOPTS:=-std=c++11 -ggdb -D_GNU_SOURCE
 TARGET:=distwc
 
@@ -9,6 +9,10 @@ $(TARGET): ../threadpool.o ../mapreduce.o distwc.o ../reeeee.o
 	g++ -o validation validation.cc -std=c++11 -Wall -O3
 
 %.o: %.c
+	$(CC) $(WARN) $(CCOPTS) $< -c $(LIB)
+
+
+%.o: %.cpp
 	$(CC) $(WARN) $(CCOPTS) $< -c $(LIB)
 
 clean-result: 
