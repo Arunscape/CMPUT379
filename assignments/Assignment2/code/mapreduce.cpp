@@ -1,6 +1,7 @@
 #include <vector>
 #include <utility>
 #include <algorithm>
+#include <unordered_set>
 
 #include <pthread.h>
 
@@ -10,6 +11,7 @@
 
 struct partition;
 void* wrapper_function_because_we_cant_change_the_fucking_signature(void*);
+Reducer reducer_function;
 
 //datastruct| partition|           key    value
 // std::vector<std::vector<std::pair<char*, char*>>> shared_data;
@@ -41,6 +43,7 @@ void MR_Run(int num_files, char *filenames[],
     REEEEE("You need at least one or more reducers!");
   }
   R = num_reducers;
+  reducer_function = concate;
 
   for (int i=0; i < num_files; i+=1){
     bool addedwork = ThreadPool_add_work(threadpool,(thread_func_t) concate, &shared_data[i]);
@@ -68,6 +71,9 @@ void MR_Run(int num_files, char *filenames[],
     }
   }
 
+  ThreadPool_destroy(reducer_threadpool);
+  
+  // done
 }
 
 // this function was copied from the assignment description
@@ -107,9 +113,23 @@ void MR_ProcessPartition(int partition_number){
  // run the user defined Reduce function
  // on the next unprocessed key in the given partition in a loop
  // (Reduce is only invoked once per key)
-  for (;;){
-    // char* next_key = MR_GetNext(what, partition_number);
+ //
+ // where do we get the key???
+
+  //for (char* next = MR_GetNext(key, partition_number) ; next != NULL; next = MR_GetNext(key, partition_number){
+   // // char* next_key = MR_GetNext(what, partition_number);
+  //  (reducer_function)(next);
+  //}
+
+  std::unordered_set<char*> unique_keys;
+  pthread_mutex_lock(&shared_data[partition_number].mutex);
+  for ( std::pair<char*,char*> &p: shared_data[partition_number].pairs ){
+    unique_keys.insert(p.first);
   }
+  for (char* k: unique_keys){
+    reducer_function(k, partition_number);
+  }
+  pthread_mutex_unlock(&shared_data[i].mutex);
 }
 
 char *MR_GetNext(char *key, int partition_number){
