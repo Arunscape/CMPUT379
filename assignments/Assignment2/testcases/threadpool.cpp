@@ -4,20 +4,22 @@
 
 void *Thread_run(void *tp);
 
-bool LessThanByFileSize::operator()(const ThreadPool_work_t* t1, const ThreadPool_work_t* t2) const {
-    if (t1 == NULL || t2 == NULL){
-      REEEEE("ERROR: One of the work items was null");
-}
+bool LessThanByFileSize::operator()(const ThreadPool_work_t *t1,
+                                    const ThreadPool_work_t *t2) const {
+  if (t1 == NULL || t2 == NULL) {
+    REEEEE("ERROR: One of the work items was null");
+  }
 
-    struct stat s1;
-    struct stat s2;
+  struct stat s1;
+  struct stat s2;
 
-    if (stat((const char*)t1->arg, &s1) == 0 && stat((const char*)t2->arg, &s2) == 0){
-      return s1.st_size < s2.st_size;
-    }
-    perror("stat()");
-    REEEEE("ERROR could not read file size");
-    return false; // REE will sys.exit(1) so this is to supporess a clang warning
+  if (stat((const char *)t1->arg, &s1) == 0 &&
+      stat((const char *)t2->arg, &s2) == 0) {
+    return s1.st_size < s2.st_size;
+  }
+  perror("stat()");
+  REEEEE("ERROR could not read file size");
+  return false; // REE will sys.exit(1) so this is to supporess a clang warning
 };
 
 /**
@@ -35,19 +37,19 @@ ThreadPool_t *ThreadPool_create(int num) {
   // create thread
   ThreadPool_t *threadpool = new ThreadPool_t();
 
-  for (int i=0; i<=num; i+=1){
+  for (int i = 0; i <= num; i += 1) {
     pthread_t thread;
     pthread_create(&thread, NULL, Thread_run, threadpool);
     threadpool->threads.push_back(thread);
   }
 
   threadpool->mutex = PTHREAD_MUTEX_INITIALIZER;
-  if(pthread_mutex_init(&(threadpool->mutex), NULL) != 0){
-        REEEEE("ERROR: Could not init mutex");
+  if (pthread_mutex_init(&(threadpool->mutex), NULL) != 0) {
+    REEEEE("ERROR: Could not init mutex");
   }
 
   threadpool->workavailable = PTHREAD_COND_INITIALIZER;
-  
+
   return threadpool;
 }
 
@@ -56,19 +58,18 @@ ThreadPool_t *ThreadPool_create(int num) {
  * Parameters*:
  *     tp - The pointer to the ThreadPool object to be destroyed
  */
-void ThreadPool_destroy(ThreadPool_t *tp){
-  
-  // ?? somehow signal to them that the threads need to exit. 
+void ThreadPool_destroy(ThreadPool_t *tp) {
+
+  // ?? somehow signal to them that the threads need to exit.
   pthread_mutex_lock(&(tp->mutex));
   tp->done = true;
   pthread_cond_signal(&(tp->workavailable));
   pthread_mutex_unlock(&(tp->mutex));
-  
+
   // wait for them to finish
-  for(pthread_t &t: tp->threads){
+  for (pthread_t &t : tp->threads) {
     pthread_join(t, NULL);
   }
-
 
   // delete it
   pthread_mutex_destroy(&(tp->mutex));
@@ -85,12 +86,12 @@ void ThreadPool_destroy(ThreadPool_t *tp){
  *     true  - If successful
  *     false - Otherwise
  */
-bool ThreadPool_add_work(ThreadPool_t *tp, thread_func_t func, void *arg){
-  
-  ThreadPool_work_t* task = new ThreadPool_work_t();
+bool ThreadPool_add_work(ThreadPool_t *tp, thread_func_t func, void *arg) {
+
+  ThreadPool_work_t *task = new ThreadPool_work_t();
   task->func = func;
   task->arg = arg;
-  
+
   pthread_mutex_lock(&(tp->mutex));
   tp->tasks.work.push(task);
   pthread_cond_signal(&(tp->workavailable));
@@ -108,20 +109,20 @@ bool ThreadPool_add_work(ThreadPool_t *tp, thread_func_t func, void *arg){
  * Return:
  *     ThreadPool_work_t* - The next task to run
  */
-ThreadPool_work_t* ThreadPool_get_work(ThreadPool_t *tp){
-    pthread_mutex_lock(&(tp->mutex));
+ThreadPool_work_t *ThreadPool_get_work(ThreadPool_t *tp) {
+  pthread_mutex_lock(&(tp->mutex));
 
-    while(!(tp->tasks.work.size() > 0)){
-      if(tp->done){
-        pthread_exit(NULL);
-      }
-      pthread_cond_wait(&(tp->workavailable), &(tp->mutex));
+  while (!(tp->tasks.work.size() > 0)) {
+    if (tp->done) {
+      pthread_exit(NULL);
     }
-    
-    ThreadPool_work_t* t =  tp->tasks.work.top();
-    tp->tasks.work.pop();
-    pthread_mutex_unlock(&(tp->mutex));
-    return t;
+    pthread_cond_wait(&(tp->workavailable), &(tp->mutex));
+  }
+
+  ThreadPool_work_t *t = tp->tasks.work.top();
+  tp->tasks.work.pop();
+  pthread_mutex_unlock(&(tp->mutex));
+  return t;
 };
 
 /**
@@ -129,14 +130,14 @@ ThreadPool_work_t* ThreadPool_get_work(ThreadPool_t *tp){
  * Parameters:
  *     tp - The ThreadPool Object this thread belongs to
  */
-void *Thread_run(void *tp){
-  ThreadPool_t* threadpool = (ThreadPool_t*) tp;
+void *Thread_run(void *tp) {
+  ThreadPool_t *threadpool = (ThreadPool_t *)tp;
 
-  for (;;){
-     // get a task from the task queue and execute it
-     ThreadPool_work_t* task = ThreadPool_get_work(threadpool);
-     (task->func)(task->arg);
-     delete task;
+  for (;;) {
+    // get a task from the task queue and execute it
+    ThreadPool_work_t *task = ThreadPool_get_work(threadpool);
+    (task->func)(task->arg);
+    delete task;
   }
   pthread_exit(NULL);
   return NULL;
