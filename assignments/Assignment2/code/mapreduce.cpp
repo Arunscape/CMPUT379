@@ -2,6 +2,7 @@
 #include <utility>
 #include <algorithm>
 #include <unordered_set>
+#include <map>
 
 #include <pthread.h>
 
@@ -22,12 +23,12 @@ int R;
 
 struct partition {
   pthread_mutex_t mutex;
-  //         KEY          VALUE
-  std::vector<std::pair<char*, char*>> pairs;
+  //            KEY   VALUE
+  std::multimap<char*, char*> pairs;
 
   partition(){
     mutex = PTHREAD_MUTEX_INITIALIZER;
-    pairs = std::vector<std::pair<char*, char*>>();
+    pairs = std::multimap<char*, char*>();
   }
 
 };
@@ -90,14 +91,12 @@ void MR_Emit(char *key, char *value){
 
     // maps the key to an integer between 0 and R-1
   unsigned long partno = MR_Partition(key, R-1); 
-  std::pair<char*, char*> pair = std::make_pair(key, value);
 
   // fine grained lock which locks only the partition being modified, and not the entire shared data structure
   pthread_mutex_lock(&shared_data[partno].mutex);
   // std::pair implements operator, so this should sort by key first then value in ascending order
   shared_data[partno].pairs.insert(
-        std::upper_bound(shared_data[partno].pairs.cbegin(), shared_data[partno].pairs.cend(), pair),
-        pair
+        std::make_pair(key, value)
       );
   pthread_mutex_unlock(&shared_data[partno].mutex);
 }
@@ -121,15 +120,17 @@ void MR_ProcessPartition(int partition_number){
   //  (reducer_function)(next);
   //}
 
-  std::unordered_set<char*> unique_keys;
+  // https://stackoverflow.com/questions/9371236/is-there-an-iterator-across-unique-keys-in-a-stdmultimap
+  // checking only the keys first allows for a O(n) operation instead of O(nlogn)
+  const auto compareKey = [](const std::pair<char*, char*>& lhs, const std::pair<char*, char*>& rhs) {
+    return lhs.first < rhs.first;
+  };
+
   pthread_mutex_lock(&shared_data[partition_number].mutex);
-  for ( std::pair<char*,char*> &p: shared_data[partition_number].pairs ){
-    unique_keys.insert(p.first);
+  for (auto it = shared_data[partition_number].pairs.begin(); it != shared_data[partition_number].pairs.end(); it = std::upper_bound(it, shared_data[partition_number].pairs.end(), *it, compareKey)){
+        reducer_function(it->first, partition_number);
   }
-  for (char* k: unique_keys){
-    reducer_function(k, partition_number);
-  }
-  pthread_mutex_unlock(&shared_data[i].mutex);
+  pthread_mutex_unlock(&shared_data[partition_number].mutex);
 }
 
 char *MR_GetNext(char *key, int partition_number){
