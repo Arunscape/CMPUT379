@@ -88,7 +88,7 @@ unsigned long MR_Partition(char *key, int num_partitions) {
 void MR_Emit(char *key, char *value) {
 
   // maps the key to an integer between 0 and R-1
-  unsigned long partno = MR_Partition(key, R - 1);
+  unsigned long partno = MR_Partition(key, R);
 
   // fine grained lock which locks only the partition being modified, and not
   // the entire shared data structure

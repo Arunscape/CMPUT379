@@ -36,6 +36,7 @@ ThreadPool_t *ThreadPool_create(int num) {
   }
   // create thread
   ThreadPool_t *threadpool = new ThreadPool_t();
+  threadpool->done = false;
 
   for (int i = 0; i <= num; i += 1) {
     pthread_t thread;
