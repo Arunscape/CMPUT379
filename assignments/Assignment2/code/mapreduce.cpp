@@ -64,20 +64,20 @@ void MR_Run(int num_files, char *filenames[], Mapper map, int num_mappers,
   ThreadPool_destroy(threadpool);
 
   // create R reducer threads
-  ThreadPool_t *reducer_threadpool = ThreadPool_create(num_reducers);
-  for (intptr_t i = 0; i <= num_reducers; i += 1) {
-    bool addedwork = ThreadPool_add_work(
-        reducer_threadpool,
-        (thread_func_t)
-            wrapper_function_because_we_cant_change_the_fucking_signature,
-        (void *)i);
-    if (!addedwork) {
-      REEEEE("Error adding work to threadpool");
-    }
+  //
+  // I just realized threadpool is very specialized for mapping, since
+  // the priorityqueue sorts based on file size, and there are no files here
+  // so, I can't use the same threadpool for the reduce stage
+  std::vector<pthread_t> reducer_threads;
+  for (intptr_t i=0; i< num_reducers; i+=1){
+    pthread_t thread;
+    pthread_create(&thread, NULL, wrapper_function_because_we_cant_change_the_fucking_signature, (void*) i);
+    reducer_threads.push_back(thread);
   }
-
-  ThreadPool_destroy(reducer_threadpool);
-
+  
+  for (auto &t: reducer_threads){
+    pthread_join(t, NULL);
+  }
   // done
 }
 
@@ -133,6 +133,7 @@ void MR_ProcessPartition(int partition_number) {
     reducer_function(it->first, partition_number);
   }
   // pthread_mutex_unlock(&shared_data[partition_number].mutex);
+  pthread_exit(NULL);
 }
 
 char *MR_GetNext(char *key, int partition_number) {
