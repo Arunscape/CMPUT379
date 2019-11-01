@@ -97,9 +97,17 @@ void MR_Run(int num_files, char *filenames[], Mapper map, int num_mappers,
   }
   // done
 
-//  for (auto &c : char_garbage){
-//    free(c);
-//  }
+
+  for (auto c : char_garbage){
+    free(c);
+  }
+
+  for (auto part: shared_data){
+    for (auto p: part.pairs){
+      free(p.first);
+      free(p.second);
+    }
+  }
 }
 
 // this function was copied from the assignment description
@@ -119,9 +127,6 @@ void MR_Emit(char *key, char *value) {
   // fine grained lock which locks only the partition being modified, and not
   char* k = strdup(key); // todo garbage collect
   char* v = strdup(value);
-
-  //char_garbage.push_back(k);
-  //char_garbage.push_back(v);
 
   // the entire shared data structure
   pthread_mutex_lock(&shared_data[partno].mutex);
@@ -180,6 +185,7 @@ char *MR_GetNext(char *key, int partition_number) {
   }
 
   char *value = strdup(shared_data[partition_number].it_first->second);
+//  char_garbage.push_back(value);
   ++shared_data[partition_number].it_first;
   return value;
 }
