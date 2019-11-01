@@ -7,6 +7,9 @@
 
 void *Thread_run(void *tp);
 
+pthread_cond_t kill_lock;
+pthread_mutex_t kill_mutex;
+
 bool LessThanByFileSize::operator()(const ThreadPool_work_t *t1,
                                     const ThreadPool_work_t *t2) const {
   if (t1 == NULL || t2 == NULL) {
@@ -70,8 +73,9 @@ ThreadPool_t *ThreadPool_create(int num) {
 
 void *kill_yourself(void *k) {
   // std::cout << "I'M TRYING TO KILL MYSELF" << std::endl;
+  // pthread_cond_signal(&kill_lock);
   pthread_exit(NULL);
-  std::cout << "Exited Successfully Failed" << std::endl;
+  std::cout << "THIS LINE SHOULD NEVER PRINT" << std::endl;
 }
 /**
  * A C style destructor to destroy a ThreadPool object
@@ -80,11 +84,13 @@ void *kill_yourself(void *k) {
  */
 void ThreadPool_destroy(ThreadPool_t *tp) {
 
+  kill_lock = tp->workavailable;
   // ?? somehow signal to them that the threads need to exit.
   for (auto &t : tp->threads) {
     (void)t;
     ThreadPool_add_work(tp, (thread_func_t)kill_yourself,
                         (void *)"KILL YOURSELF");
+    std::cout<< "ADDED KILL TASK " << std::endl;
   }
   // wait for them to finish
   for (pthread_t &t : tp->threads) {
@@ -114,7 +120,8 @@ bool ThreadPool_add_work(ThreadPool_t *tp, thread_func_t func, void *arg) {
 
   pthread_mutex_lock(&(tp->mutex));
   tp->tasks.work.push(task);
-  pthread_cond_signal(&(tp->workavailable));
+  //pthread_cond_signal(&(tp->workavailable));
+  pthread_cond_broadcast(&(tp->workavailable));
   pthread_mutex_unlock(&(tp->mutex));
 
   return true;
@@ -159,13 +166,15 @@ void *Thread_run(void *tp) {
     } else {
       // SLEEP like 200ms
       // todo wait on the condition properly
-      //      usleep(2000);
-      pthread_mutex_lock(&(threadpool->mutex));
-
-      while (!(threadpool->tasks.work.size() > 0)) {
-        pthread_cond_wait(&(threadpool->workavailable), &(threadpool->mutex));
-      }
-      pthread_mutex_unlock(&(threadpool->mutex));
+      usleep(200);
+      // pthread_mutex_lock(&(threadpool->mutex));
+      //
+      // while (!(threadpool->tasks.work.size() > 0)) {
+      //  std::cout << "I WANT WORK" << std::endl;
+      //  pthread_cond_wait(&(threadpool->workavailable), &(threadpool->mutex));
+      // }
+      //
+      // pthread_mutex_unlock(&(threadpool->mutex));
     }
   }
   pthread_exit(NULL);
