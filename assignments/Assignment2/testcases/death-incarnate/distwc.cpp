@@ -16,7 +16,7 @@ void Map(char *file_name) {
   while (getline(&line, &size, fp) != -1) {
     char *token, *dummy = line;
     while ((token = strsep(&dummy, " \t\n\r")) != NULL) {
-      MR_Emit(token, "1");
+      MR_Emit(token, (char*) "1");
       
     }
     

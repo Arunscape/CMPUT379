@@ -1,14 +1,18 @@
-CC:=gcc
+CC:=g++
 WARN:=-Wall 
-LIB:=-lm -pthread -O3
-CCOPTS:=-std=c99 -ggdb -D_GNU_SOURCE
+LIB:=-lm -pthread -g
+CCOPTS:=-std=c++11 -ggdb -D_GNU_SOURCE
 TARGET:=distwc
 
-$(TARGET): ../threadpool.o ../mapreduce.o distwc.o
+$(TARGET): ../threadpool.o ../mapreduce.o distwc.o ../reeeee.o
 	$(CC) $(WARN) $(CCOPTS) $^ -o $@ $(LIB)
 	g++ -o validation validation.cc -std=c++11 -Wall -O3
 
-%.o: %.c
+#%.o: %.c
+#	$(CC) $(WARN) $(CCOPTS) $< -c $(LIB)
+
+
+%.o: %.cpp
 	$(CC) $(WARN) $(CCOPTS) $< -c $(LIB)
 
 clean-result: 
@@ -18,6 +22,8 @@ clean-all:
 	rm -rf result-*.txt
 	rm -rf validation
 
-threadpool.o: ../threadpool.c ../threadpool.h
-distwc.o: distwc.c ../mapreduce.h
-mapreduce.o: ../mapreduce.c ../mapreduce.h ../threadpool.h
+threadpool.o: ../threadpool.cpp ../threadpool.h ../reeeee.h
+#distwc.o: distwc.c ../mapreduce.h
+distwc.o: distwc.cpp ../mapreduce.h
+mapreduce.o: ../mapreduce.cpp ../mapreduce.h ../threadpool.h ../reeeee.h
+reeeee.o: ../reeeee.cpp ../reeeee.h 

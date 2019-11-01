@@ -31,8 +31,10 @@ bool LessThanByFileSize::operator()(const ThreadPool_work_t *t1,
     return s1.st_size < s2.st_size;
   }
   perror("stat()");
-  REEEEE("ERROR could not read file size");
-  return false; // REE will sys.exit(1) so this is to supporess a clang warning
+//  std::cout<< "FILE 1: " << (char*) t1->arg << std::endl;
+//  std::cout<< "FILE 2: " << (char*) t2->arg << std::endl;
+//  REEEEE("ERROR could not read file size");
+  return true; // REE will sys.exit(1) so this is to supporess a clang warning
 };
 
 /**

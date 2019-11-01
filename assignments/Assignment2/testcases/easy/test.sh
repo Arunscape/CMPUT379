@@ -9,6 +9,7 @@ do
         FILES+=" $file"
 done
 
+make clean-result
 make
 
 ./distwc 1 1 ${FILES}
