@@ -3,6 +3,7 @@
 #include <sys/stat.h>
 #include <string.h>
 #include <iostream> // todo delet me
+#include <unistd.h>
 
 void *Thread_run(void *tp);
 
@@ -13,6 +14,9 @@ bool LessThanByFileSize::operator()(const ThreadPool_work_t *t1,
   }
 
   if (strcmp((char*) t1->arg, "KILL YOURSELF") == 0){
+    if (strcmp((char*) t2->arg, "KILL YOURSELF") == 0){
+      return false;
+    }
     return true;
   }
   if (strcmp((char*) t2->arg, "KILL YOURSELF") == 0){
@@ -63,8 +67,9 @@ ThreadPool_t *ThreadPool_create(int num) {
 }
 
 void* kill_yourself(void * k){
-  //std::cout << "I'M TRYING TO KILL MYSELF" << std::endl;
+// std::cout << "I'M TRYING TO KILL MYSELF" << std::endl;
   pthread_exit(NULL);
+ std::cout << "Exited Successfully Failed" << std::endl;
 }
 /**
  * A C style destructor to destroy a ThreadPool object
@@ -124,12 +129,11 @@ bool ThreadPool_add_work(ThreadPool_t *tp, thread_func_t func, void *arg) {
 ThreadPool_work_t *ThreadPool_get_work(ThreadPool_t *tp) {
   pthread_mutex_lock(&(tp->mutex));
 
-  while (!(tp->tasks.work.size() > 0)) {
-    pthread_cond_wait(&(tp->workavailable), &(tp->mutex));
+  ThreadPool_work_t *t = NULL;
+  if (tp->tasks.work.size() > 0){
+    t = tp->tasks.work.top();
+    tp->tasks.work.pop();
   }
-
-  ThreadPool_work_t *t = tp->tasks.work.top();
-  tp->tasks.work.pop();
   pthread_mutex_unlock(&(tp->mutex));
   return t;
 };
@@ -144,9 +148,23 @@ void *Thread_run(void *tp) {
 
   for (;;) {
     // get a task from the task queue and execute it
+//    std::cout << "I WANT WORK" << std::endl;
     ThreadPool_work_t *task = ThreadPool_get_work(threadpool);
-    (task->func)(task->arg);
-    delete task;
+    if (task != NULL){
+      (task->func)(task->arg);
+      delete task;
+    } else {
+      // SLEEP like 200ms
+      // todo wait on the condition properly
+      usleep(2000);
+      // pthread_mutex_lock(&(tp->mutex));
+      //
+      // while (! (tp->tasks.work.size() > 0)){
+      //  pthread_cond_wait(&(tp->workavailable, &(tp->mutex);
+      // }
+      //  pthread_mutex_unlock(&(tp->mutex));
+
+    }
   }
   pthread_exit(NULL);
   return NULL;

@@ -19,7 +19,9 @@ Reducer reducer_function;
 
 // datastruct| partition|           key    value
 // std::vector<std::vector<std::pair<char*, char*>>> shared_data;
-std::vector<partition> shared_data;
+std::vector<partition> shared_data = std::vector<partition>();
+
+std::vector<char*> char_garbage = std::vector<char*>();
 
 // number of reducers
 int R;
@@ -36,7 +38,6 @@ struct partition {
 
   std::multimap<char*, char*, CharCompare>::iterator it_first;
   std::multimap<char*, char*, CharCompare>::iterator it_end;
-  std::multimap<char*, char*, CharCompare>::iterator iter;
 
   partition() {
     mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -95,6 +96,10 @@ void MR_Run(int num_files, char *filenames[], Mapper map, int num_mappers,
     pthread_join(t, NULL);
   }
   // done
+
+//  for (auto &c : char_garbage){
+//    free(c);
+//  }
 }
 
 // this function was copied from the assignment description
@@ -112,13 +117,14 @@ void MR_Emit(char *key, char *value) {
   unsigned long partno = MR_Partition(key, R);
 
   // fine grained lock which locks only the partition being modified, and not
-  // the entire shared data structure
-  pthread_mutex_lock(&shared_data[partno].mutex);
-  // std::pair implements operator, so this should sort by key first then value
-  // in ascending order
-  //
   char* k = strdup(key); // todo garbage collect
   char* v = strdup(value);
+
+  //char_garbage.push_back(k);
+  //char_garbage.push_back(v);
+
+  // the entire shared data structure
+  pthread_mutex_lock(&shared_data[partno].mutex);
   shared_data[partno].pairs.insert(std::make_pair(k, v));
   pthread_mutex_unlock(&shared_data[partno].mutex);
 }
@@ -126,7 +132,7 @@ void MR_Emit(char *key, char *value) {
 // sorry, please excuse the name of this function
 void *wrapper_function_because_we_cant_change_the_fucking_signature(void *p) {
   int partno = (intptr_t)p;
-
+  
   MR_ProcessPartition(partno);
   pthread_exit(NULL);
   return NULL;
@@ -142,11 +148,17 @@ void MR_ProcessPartition(int partition_number) {
     return strcmp(lhs.first, rhs.first) < 0;
   };
 
+// for (auto it=shared_data[partition_number].pairs.begin();
+//      it != shared_data[partition_number].pairs.end(); ++it){
+//    std::cout<< it->first << partition_number <<  std::endl;
+// }
+
+
   for (auto it = shared_data[partition_number].pairs.begin();
        it != shared_data[partition_number].pairs.end();
        it = std::upper_bound(it, shared_data[partition_number].pairs.end(), *it,
                              compareFirst)) {
-    //std::cout << "UNIQUE KEY: " << it->first << std::endl;
+  //  std::cout<< it->first << partition_number <<  std::endl;
 
     char* key = it->first;
 
@@ -158,19 +170,16 @@ void MR_ProcessPartition(int partition_number) {
   }
 }
 
-// todo fix this
 char *MR_GetNext(char *key, int partition_number) {
   // called by the user provided Reducer function
   // returns the next value associated with a given key in the sorted
   // partition returns NULL when the keys's values have been sorted correctly
-
 
   if (shared_data[partition_number].it_first == shared_data[partition_number].it_end) {
     return NULL;
   }
 
   char *value = strdup(shared_data[partition_number].it_first->second);
-//  shared_data[partition_number].pairs.erase(shared_data[partition_number].it_first);
   ++shared_data[partition_number].it_first;
   return value;
 }
