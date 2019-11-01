@@ -32,10 +32,17 @@ struct partition {
   pthread_mutex_t mutex;
   //            KEY   VALUE
   std::multimap<char *, char *, CharCompare> pairs;
+  //  std::multimap<char* , char*>::iterator reducer_iterator;
+
+  std::multimap<char*, char*, CharCompare>::iterator it_first;
+  std::multimap<char*, char*, CharCompare>::iterator it_end;
+  std::multimap<char*, char*, CharCompare>::iterator iter;
 
   partition() {
     mutex = PTHREAD_MUTEX_INITIALIZER;
     pairs = std::multimap<char *, char *, CharCompare>();
+    //    reducer_iterator = std::multimap<char*, char*,
+    //    CharCompare>::iterator();
   }
 };
 
@@ -109,7 +116,10 @@ void MR_Emit(char *key, char *value) {
   pthread_mutex_lock(&shared_data[partno].mutex);
   // std::pair implements operator, so this should sort by key first then value
   // in ascending order
-  shared_data[partno].pairs.insert(std::make_pair(strdup(key), strdup(value)));
+  //
+  char* k = strdup(key); // todo garbage collect
+  char* v = strdup(value);
+  shared_data[partno].pairs.insert(std::make_pair(k, v));
   pthread_mutex_unlock(&shared_data[partno].mutex);
 }
 
@@ -126,30 +136,41 @@ void MR_ProcessPartition(int partition_number) {
   // on the next unprocessed key in the given partition in a loop
   // (Reduce is only invoked once per key)
 
+  //  https://stackoverflow.com/questions/9371236/is-there-an-iterator-across-unique-keys-in-a-stdmultimap
+  const auto compareFirst = [](const std::pair<char *, char *> &lhs,
+                               const std::pair<char *, char *> &rhs) {
+    return strcmp(lhs.first, rhs.first) < 0;
+  };
+
   for (auto it = shared_data[partition_number].pairs.begin();
-       it != shared_data[partition_number].pairs.end();) {
-    char *key = it->first;
+       it != shared_data[partition_number].pairs.end();
+       it = std::upper_bound(it, shared_data[partition_number].pairs.end(), *it,
+                             compareFirst)) {
+    //std::cout << "UNIQUE KEY: " << it->first << std::endl;
 
-    std::cout << "UNIQUE " << key << std::endl;
+    char* key = it->first;
+
+    auto iter_pair = shared_data[partition_number].pairs.equal_range(key);
+    shared_data[partition_number].it_first = iter_pair.first;
+    shared_data[partition_number].it_end = iter_pair.second;
+  
     reducer_function(key, partition_number);
-
-    do {
-      ++it;
-    } while (it != shared_data[partition_number].pairs.end() &&
-             (strcmp(key, it->first) == 0));
   }
 }
 
-  char *MR_GetNext(char *key, int partition_number) {
-    // called by the user provided Reducer function
-    // returns the next value associated with a given key in the sorted
-    // partition returns NULL when the keys's values have been sorted correctly
+// todo fix this
+char *MR_GetNext(char *key, int partition_number) {
+  // called by the user provided Reducer function
+  // returns the next value associated with a given key in the sorted
+  // partition returns NULL when the keys's values have been sorted correctly
 
-    auto it = shared_data[partition_number].pairs.find(key);
-    if (it == shared_data[partition_number].pairs.end()) {
-      return NULL;
-    }
-    char *value = strdup(it->second);
-    shared_data[partition_number].pairs.erase(it);
-    return value;
+
+  if (shared_data[partition_number].it_first == shared_data[partition_number].it_end) {
+    return NULL;
   }
+
+  char *value = strdup(shared_data[partition_number].it_first->second);
+//  shared_data[partition_number].pairs.erase(shared_data[partition_number].it_first);
+  ++shared_data[partition_number].it_first;
+  return value;
+}
