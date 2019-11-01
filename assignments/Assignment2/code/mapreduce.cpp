@@ -4,6 +4,8 @@
 #include <utility>
 #include <vector>
 
+#include <iostream>
+
 #include <pthread.h>
 #include <string.h>
 
@@ -22,14 +24,18 @@ std::vector<partition> shared_data;
 // number of reducers
 int R;
 
+struct CharCompare {
+  bool operator()(char *left, char *right) { return strcmp(left, right) < 0; }
+};
+
 struct partition {
   pthread_mutex_t mutex;
   //            KEY   VALUE
-  std::multimap<char *, char *> pairs;
+  std::multimap<char *, char *, CharCompare> pairs;
 
   partition() {
     mutex = PTHREAD_MUTEX_INITIALIZER;
-    pairs = std::multimap<char *, char *>();
+    pairs = std::multimap<char *, char *, CharCompare>();
   }
 };
 
@@ -48,7 +54,7 @@ void MR_Run(int num_files, char *filenames[], Mapper map, int num_mappers,
 
   R = num_reducers;
   reducer_function = concate;
-  for (int i = 0; i< num_reducers; i+=1){
+  for (int i = 0; i < num_reducers; i += 1) {
     partition *p = new partition();
     shared_data.push_back(*p);
   }
@@ -69,13 +75,16 @@ void MR_Run(int num_files, char *filenames[], Mapper map, int num_mappers,
   // the priorityqueue sorts based on file size, and there are no files here
   // so, I can't use the same threadpool for the reduce stage
   std::vector<pthread_t> reducer_threads;
-  for (intptr_t i=0; i< num_reducers; i+=1){
+  for (intptr_t i = 0; i < num_reducers; i += 1) {
     pthread_t thread;
-    pthread_create(&thread, NULL, wrapper_function_because_we_cant_change_the_fucking_signature, (void*) i);
+    pthread_create(
+        &thread, NULL,
+        wrapper_function_because_we_cant_change_the_fucking_signature,
+        (void *)i);
     reducer_threads.push_back(thread);
   }
-  
-  for (auto &t: reducer_threads){
+
+  for (auto &t : reducer_threads) {
     pthread_join(t, NULL);
   }
   // done
@@ -117,38 +126,30 @@ void MR_ProcessPartition(int partition_number) {
   // on the next unprocessed key in the given partition in a loop
   // (Reduce is only invoked once per key)
 
-  // https://stackoverflow.com/questions/9371236/is-there-an-iterator-across-unique-keys-in-a-stdmultimap
-  // checking only the keys first allows for a O(n) operation instead of
-  // O(nlogn)
-//  const auto compareKey = [](const std::pair<char *, char *> &lhs,
-//                             const std::pair<char *, char *> &rhs) {
-//    return lhs.first < rhs.first;
-//  };
+  for (auto it = shared_data[partition_number].pairs.begin();
+       it != shared_data[partition_number].pairs.end();) {
+    char *key = it->first;
 
-  // each thread accesses its own partition, so no mutex needed!
-  // pthread_mutex_lock(&shared_data[partition_number].mutex);
-//  for (auto it = shared_data[partition_number].pairs.begin();
-  //     it != shared_data[partition_number].pairs.end();
-    //   it = std::upper_bound(it, shared_data[partition_number].pairs.end(), *it,
-      //                       compareKey)) {
-    for (auto it = shared_data[partition_number].pairs.begin(), end = shared_data[partition_number].pairs.end(); 
-        it != end; 
-        it = shared_data[partition_number].pairs.upper_bound(it->first)){
-      reducer_function(it->first, partition_number);
+    std::cout << "UNIQUE " << key << std::endl;
+    reducer_function(key, partition_number);
+
+    do {
+      ++it;
+    } while (it != shared_data[partition_number].pairs.end() &&
+             (strcmp(key, it->first) == 0));
   }
-  // pthread_mutex_unlock(&shared_data[partition_number].mutex);
 }
 
-char *MR_GetNext(char *key, int partition_number) {
-  // called by the user provided Reducer function
-  // returns the next value associated with a given key in the sorted partition
-  // returns NULL when the keys's values have been sorted correctly
+  char *MR_GetNext(char *key, int partition_number) {
+    // called by the user provided Reducer function
+    // returns the next value associated with a given key in the sorted
+    // partition returns NULL when the keys's values have been sorted correctly
 
-  auto it = shared_data[partition_number].pairs.find(key);
-  if (it == shared_data[partition_number].pairs.end()) {
-    return NULL;
+    auto it = shared_data[partition_number].pairs.find(key);
+    if (it == shared_data[partition_number].pairs.end()) {
+      return NULL;
+    }
+    char *value = strdup(it->second);
+    shared_data[partition_number].pairs.erase(it);
+    return value;
   }
-  char *value = strdup(it->second);
-  shared_data[partition_number].pairs.erase(it);
-  return value;
-}
