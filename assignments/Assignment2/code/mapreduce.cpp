@@ -109,6 +109,7 @@ void *wrapper_function_because_we_cant_change_the_fucking_signature(void *p) {
   int partno = (intptr_t)p;
 
   MR_ProcessPartition(partno);
+  pthread_exit(NULL);
   return NULL;
 }
 void MR_ProcessPartition(int partition_number) {
@@ -119,21 +120,23 @@ void MR_ProcessPartition(int partition_number) {
   // https://stackoverflow.com/questions/9371236/is-there-an-iterator-across-unique-keys-in-a-stdmultimap
   // checking only the keys first allows for a O(n) operation instead of
   // O(nlogn)
-  const auto compareKey = [](const std::pair<char *, char *> &lhs,
-                             const std::pair<char *, char *> &rhs) {
-    return lhs.first < rhs.first;
-  };
+//  const auto compareKey = [](const std::pair<char *, char *> &lhs,
+//                             const std::pair<char *, char *> &rhs) {
+//    return lhs.first < rhs.first;
+//  };
 
   // each thread accesses its own partition, so no mutex needed!
   // pthread_mutex_lock(&shared_data[partition_number].mutex);
-  for (auto it = shared_data[partition_number].pairs.begin();
-       it != shared_data[partition_number].pairs.end();
-       it = std::upper_bound(it, shared_data[partition_number].pairs.end(), *it,
-                             compareKey)) {
-    reducer_function(it->first, partition_number);
+//  for (auto it = shared_data[partition_number].pairs.begin();
+  //     it != shared_data[partition_number].pairs.end();
+    //   it = std::upper_bound(it, shared_data[partition_number].pairs.end(), *it,
+      //                       compareKey)) {
+    for (auto it = shared_data[partition_number].pairs.begin(), end = shared_data[partition_number].pairs.end(); 
+        it != end; 
+        it = shared_data[partition_number].pairs.upper_bound(it->first)){
+      reducer_function(it->first, partition_number);
   }
   // pthread_mutex_unlock(&shared_data[partition_number].mutex);
-  pthread_exit(NULL);
 }
 
 char *MR_GetNext(char *key, int partition_number) {

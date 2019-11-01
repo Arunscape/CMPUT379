@@ -8,3 +8,4 @@ done
 make
 
 ./distwc 1 1 ${FILES}
+#./distwc 5 5 ${FILES}

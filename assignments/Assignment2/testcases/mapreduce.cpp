@@ -48,6 +48,10 @@ void MR_Run(int num_files, char *filenames[], Mapper map, int num_mappers,
 
   R = num_reducers;
   reducer_function = concate;
+  for (int i = 0; i< num_reducers; i+=1){
+    partition *p = new partition();
+    shared_data.push_back(*p);
+  }
 
   for (int i = 0; i < num_files; i += 1) {
     bool addedwork =
@@ -60,20 +64,20 @@ void MR_Run(int num_files, char *filenames[], Mapper map, int num_mappers,
   ThreadPool_destroy(threadpool);
 
   // create R reducer threads
-  ThreadPool_t *reducer_threadpool = ThreadPool_create(num_reducers);
-  for (intptr_t i = 0; i <= num_reducers; i += 1) {
-    bool addedwork = ThreadPool_add_work(
-        reducer_threadpool,
-        (thread_func_t)
-            wrapper_function_because_we_cant_change_the_fucking_signature,
-        (void *)i);
-    if (!addedwork) {
-      REEEEE("Error adding work to threadpool");
-    }
+  //
+  // I just realized threadpool is very specialized for mapping, since
+  // the priorityqueue sorts based on file size, and there are no files here
+  // so, I can't use the same threadpool for the reduce stage
+  std::vector<pthread_t> reducer_threads;
+  for (intptr_t i=0; i< num_reducers; i+=1){
+    pthread_t thread;
+    pthread_create(&thread, NULL, wrapper_function_because_we_cant_change_the_fucking_signature, (void*) i);
+    reducer_threads.push_back(thread);
   }
-
-  ThreadPool_destroy(reducer_threadpool);
-
+  
+  for (auto &t: reducer_threads){
+    pthread_join(t, NULL);
+  }
   // done
 }
 
@@ -96,7 +100,7 @@ void MR_Emit(char *key, char *value) {
   pthread_mutex_lock(&shared_data[partno].mutex);
   // std::pair implements operator, so this should sort by key first then value
   // in ascending order
-  shared_data[partno].pairs.insert(std::make_pair(key, value));
+  shared_data[partno].pairs.insert(std::make_pair(strdup(key), strdup(value)));
   pthread_mutex_unlock(&shared_data[partno].mutex);
 }
 
@@ -105,6 +109,7 @@ void *wrapper_function_because_we_cant_change_the_fucking_signature(void *p) {
   int partno = (intptr_t)p;
 
   MR_ProcessPartition(partno);
+  pthread_exit(NULL);
   return NULL;
 }
 void MR_ProcessPartition(int partition_number) {
@@ -115,18 +120,21 @@ void MR_ProcessPartition(int partition_number) {
   // https://stackoverflow.com/questions/9371236/is-there-an-iterator-across-unique-keys-in-a-stdmultimap
   // checking only the keys first allows for a O(n) operation instead of
   // O(nlogn)
-  const auto compareKey = [](const std::pair<char *, char *> &lhs,
-                             const std::pair<char *, char *> &rhs) {
-    return lhs.first < rhs.first;
-  };
+//  const auto compareKey = [](const std::pair<char *, char *> &lhs,
+//                             const std::pair<char *, char *> &rhs) {
+//    return lhs.first < rhs.first;
+//  };
 
   // each thread accesses its own partition, so no mutex needed!
   // pthread_mutex_lock(&shared_data[partition_number].mutex);
-  for (auto it = shared_data[partition_number].pairs.begin();
-       it != shared_data[partition_number].pairs.end();
-       it = std::upper_bound(it, shared_data[partition_number].pairs.end(), *it,
-                             compareKey)) {
-    reducer_function(it->first, partition_number);
+//  for (auto it = shared_data[partition_number].pairs.begin();
+  //     it != shared_data[partition_number].pairs.end();
+    //   it = std::upper_bound(it, shared_data[partition_number].pairs.end(), *it,
+      //                       compareKey)) {
+    for (auto it = shared_data[partition_number].pairs.begin(), end = shared_data[partition_number].pairs.end(); 
+        it != end; 
+        it = shared_data[partition_number].pairs.upper_bound(it->first)){
+      reducer_function(it->first, partition_number);
   }
   // pthread_mutex_unlock(&shared_data[partition_number].mutex);
 }

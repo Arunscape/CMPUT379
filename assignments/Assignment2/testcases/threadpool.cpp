@@ -1,6 +1,8 @@
 #include "threadpool.h"
 #include "reeeee.h"
 #include <sys/stat.h>
+#include <string.h>
+#include <iostream> // todo delet me
 
 void *Thread_run(void *tp);
 
@@ -8,6 +10,13 @@ bool LessThanByFileSize::operator()(const ThreadPool_work_t *t1,
                                     const ThreadPool_work_t *t2) const {
   if (t1 == NULL || t2 == NULL) {
     REEEEE("ERROR: One of the work items was null");
+  }
+
+  if (strcmp((char*) t1->arg, "KILL YOURSELF") == 0){
+    return true;
+  }
+  if (strcmp((char*) t2->arg, "KILL YOURSELF") == 0){
+    return false;
   }
 
   struct stat s1;
@@ -36,9 +45,8 @@ ThreadPool_t *ThreadPool_create(int num) {
   }
   // create thread
   ThreadPool_t *threadpool = new ThreadPool_t();
-  threadpool->done = false;
 
-  for (int i = 0; i <= num; i += 1) {
+  for (int i = 0; i < num; i += 1) {
     pthread_t thread;
     pthread_create(&thread, NULL, Thread_run, threadpool);
     threadpool->threads.push_back(thread);
@@ -54,6 +62,10 @@ ThreadPool_t *ThreadPool_create(int num) {
   return threadpool;
 }
 
+void* kill_yourself(void * k){
+  //std::cout << "I'M TRYING TO KILL MYSELF" << std::endl;
+  pthread_exit(NULL);
+}
 /**
  * A C style destructor to destroy a ThreadPool object
  * Parameters*:
@@ -62,11 +74,10 @@ ThreadPool_t *ThreadPool_create(int num) {
 void ThreadPool_destroy(ThreadPool_t *tp) {
 
   // ?? somehow signal to them that the threads need to exit.
-  pthread_mutex_lock(&(tp->mutex));
-  tp->done = true;
-  pthread_cond_signal(&(tp->workavailable));
-  pthread_mutex_unlock(&(tp->mutex));
-
+  for (auto &t: tp->threads){
+    (void) t;
+    ThreadPool_add_work(tp, (thread_func_t) kill_yourself, (void*) "KILL YOURSELF");
+  }
   // wait for them to finish
   for (pthread_t &t : tp->threads) {
     pthread_join(t, NULL);
@@ -114,9 +125,6 @@ ThreadPool_work_t *ThreadPool_get_work(ThreadPool_t *tp) {
   pthread_mutex_lock(&(tp->mutex));
 
   while (!(tp->tasks.work.size() > 0)) {
-    if (tp->done) {
-      pthread_exit(NULL);
-    }
     pthread_cond_wait(&(tp->workavailable), &(tp->mutex));
   }
 

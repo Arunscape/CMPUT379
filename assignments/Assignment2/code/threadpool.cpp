@@ -63,7 +63,7 @@ ThreadPool_t *ThreadPool_create(int num) {
 }
 
 void* kill_yourself(void * k){
-  std::cout << "I'M TRYING TO KILL MYSELF" << std::endl;
+  //std::cout << "I'M TRYING TO KILL MYSELF" << std::endl;
   pthread_exit(NULL);
 }
 /**
