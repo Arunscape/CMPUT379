@@ -184,7 +184,8 @@ char *MR_GetNext(char *key, int partition_number) {
     return NULL;
   }
 
-  char *value = strdup(shared_data[partition_number].it_first->second);
+  //char *value = strdup(shared_data[partition_number].it_first->second);
+  char *value = shared_data[partition_number].it_first->second;
 //  char_garbage.push_back(value);
   ++shared_data[partition_number].it_first;
   return value;
