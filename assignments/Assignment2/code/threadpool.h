@@ -19,8 +19,9 @@ struct LessThanByFileSize {
 
 typedef struct {
   // TODO: Add members here
-  std::priority_queue<ThreadPool_work_t *, std::vector<ThreadPool_work_t *>,
-                      LessThanByFileSize>
+//  std::priority_queue<ThreadPool_work_t *, std::vector<ThreadPool_work_t *>,
+  //                    LessThanByFileSize>
+  std::queue<ThreadPool_work_t *>
       work;
 } ThreadPool_work_queue_t;
 
