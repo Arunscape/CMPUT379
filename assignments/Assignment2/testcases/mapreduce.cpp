@@ -12,6 +12,7 @@
 #include "mapreduce.h"
 #include "reeeee.h"
 #include "threadpool.h"
+#include <sys/stat.h>
 
 struct partition;
 
@@ -62,6 +63,10 @@ void MR_Run(int num_files, char *filenames[], Mapper map, int num_mappers,
   }
 
   for (int i = 0; i < num_files; i += 1) {
+    struct stat s;
+    if (stat(filenames[i], &s) < 0) {
+      continue;
+    }
     bool addedwork =
         ThreadPool_add_work(threadpool, (thread_func_t)map, filenames[i]);
     if (!addedwork) {
