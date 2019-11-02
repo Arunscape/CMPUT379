@@ -137,7 +137,7 @@ ThreadPool_work_t *ThreadPool_get_work(ThreadPool_t *tp) {
 
   ThreadPool_work_t *t = NULL;
   if (tp->tasks.work.size() > 0) {
-    t = tp->tasks.work.front();
+    t = tp->tasks.work.top();
     tp->tasks.work.pop();
   }
   pthread_mutex_unlock(&(tp->mutex));
@@ -165,19 +165,22 @@ void *Thread_run(void *tp) {
       delete task;
     } else {
 
-      //      if (threadpool->done) {
-      //        break;
-      //      }
-
-      pthread_mutex_lock(&(threadpool->mutex));
-
-      while (!(threadpool->tasks.work.size() > 0) && !threadpool->done) {
-        std::cout << "I WANT WORK" << std::endl;
-        pthread_cond_wait(&(threadpool->workavailable), &(threadpool->mutex));
-        std::cout << "I'M FREE" << std::endl;
+      if (threadpool->done) {
+        break;
       }
 
-      pthread_mutex_unlock(&(threadpool->mutex));
+      // pthread_mutex_lock(&(threadpool->mutex));
+
+      // while (!(threadpool->tasks.work.size() > 0) && !threadpool->done)
+      //{
+      // std::cout << "I WANT WORK" << std::endl;
+      // pthread_cond_wait(&(threadpool->workavailable),
+      //&(threadpool->mutex));
+      // std::cout << "I'M FREE" << std::endl;
+      //}
+
+      // pthread_mutex_unlock(&(threadpool->mutex));
+      // }
     }
   }
   pthread_exit(NULL);
