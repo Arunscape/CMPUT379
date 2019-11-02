@@ -1,6 +1,7 @@
 #!/bin/bash
 
 make clean-result
+make clean-all
 
 echo "Testing using everything"
 

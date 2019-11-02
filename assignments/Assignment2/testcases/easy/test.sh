@@ -10,6 +10,7 @@ do
 done
 
 make clean-result
+make clean-all
 make
 
 ./distwc 1 1 ${FILES}

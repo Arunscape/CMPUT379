@@ -4,7 +4,7 @@ This is a global variable in mapreduce.cpp.
 
 Its type is std::vector<partition>
 , where partition is a custom struct which contains a multimap,
-pthread mutex, and some iterators used by the MR_GetNext function.
+a pthread mutex, and some iterators used by the MR_GetNext function.
 
 the multimap in partition is of type
 std::multimap<char*, char*>
@@ -52,7 +52,12 @@ with that many threads. It also initializes a mutex and a condition variable.
 
 
 Threadpool destroy works by creating tasks as many as there are threads 
-which invoke a function that makes each thread exit itself. Each thread is
+which have empty arguments.
+Initially, I had them invoke a function that makes each thread exit itself, 
+but I found I could simplify this by checking a boolean variable
+named done in the main loop of the thread, then exiting from there. 
+
+Each thread is
 guaranteed to only pick up one of these since the thread will exit, and it will
 no longer pick up a new task. 
 
@@ -86,25 +91,16 @@ get a task by calling threadpool get work. If the task is null, it will
 wait on the condition variable, and if the task exists, it will run the task
 and delete it from the queue. 
 
-
-Now, to address the sleep. Without it, the code mostly works, but then
-my method for exiting the threads when all the tasks are done don't seem to
-work. That is, using the test cases provided by the TA in the forum,
-I will see that the files are done processing, but then one thread exits,
-while the rest are stuck waiting on the condition variable workavailable.
-The sleep resolves this issue, but I know it is not reliable, and it is
-not the best way to do it. Also, with no doubt it increases the running time
-of the code, since CPU cycles are wasted. I'm sure without it, my code would
-work in seconds on the death-incarnate test case instead of about 5 minutes.
-Still, 5 minutes is way less than an hour.
-(That is, 5 minutes for each test case approximately.
-so, for the death-incarnate, there are 3 invocations of distwc, which
-in total take 5 + 5 + 5 = about 15 minutes)
+As the code is, the threads do not wait on the condition variable
+and they instead stay in a busy for loop. 
+My attempt at using the condition variable results in one
+thread exiting, and the others stuck waiting on the condition variable.
+Instead I just check if done is true.
 
 However, this hack allows me to show that the
 rest of the code works properly (I hope), that is, the running of the
 user provided map and reduce functions. Commented out is my attempt to
-use the condition variables and signalling instead of the sleep, but I
+use the condition variables and signalling instead  but I
 could not get this working since I'm out of time and also sleep deprived.
 I'm sure there is some trivial thing I'm missing that will be obvious when
 I look at it later....
@@ -112,14 +108,22 @@ For the purposes of this assignment though, I always see the
 
 Congratulation, your mapreduce library is concurrency stable.
 
-Message, and I've run this a LOT of times. 
+Message, and I've run this a LOT of times, even on death-incarnate.
+It takes about 3-5 minutes to run each death test, and there are 3
+in test.sh, meaning about 9-15 minutes to run the entire death-incarnate
+test. This is significantly less than an hour.
+
 ## Synchronization primitives
 pthread mutexes and 
 pthread condition variables, 
 were used for synchronization. 
 Nothing else was used
 
+for the threadpool, synchronization was trivial, we 
+obtain a lock for the lines of code which modify the threadpool and unlock
+when finished. 
 
+I struggled a bit with the condition variables though (see above)
 ## Library functions and global variables
 of course, the shared data structure is a global variable in mapreduce.h
 
@@ -137,7 +141,7 @@ cases provided in the eclass forum by the TA.
 
 I did get to visually inspect and verify that the mapping phase is working
 correctly when my reducer wasn't working. I printed each key and the
-partition it was going to piped he output to sort, and verified that
+partition it was going to , piped he output to sort, and verified that
 identical words were going to the same partition. 
 
 In my testing with the test cases provided on the forum,
@@ -170,4 +174,4 @@ Congratulation, your mapreduce library is concurrency stable.
 - http://pages.cs.wisc.edu/~skrentny/cs367-common/readings/Red-Black-Trees/
 - https://stackoverflow.com/questions/7576953/c-auto-keyword-why-is-it-magic
 - https://stackoverflow.com/questions/35514909/how-to-clear-vector-in-c-from-memory
-
+- https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.bpxbd00/ptcinit.htm

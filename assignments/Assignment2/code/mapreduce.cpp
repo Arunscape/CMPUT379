@@ -32,8 +32,8 @@ struct partition {
   //            KEY   VALUE
   std::multimap<char *, char *, CharCompare> pairs;
 
-  std::multimap<char*, char*, CharCompare>::iterator it_first;
-  std::multimap<char*, char*, CharCompare>::iterator it_end;
+  std::multimap<char *, char *, CharCompare>::iterator it_first;
+  std::multimap<char *, char *, CharCompare>::iterator it_end;
 
   partition() {
     mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -79,10 +79,9 @@ void MR_Run(int num_files, char *filenames[], Mapper map, int num_mappers,
   std::vector<pthread_t> reducer_threads;
   for (intptr_t i = 0; i < num_reducers; i += 1) {
     pthread_t thread;
-    pthread_create(
-        &thread, NULL,
-        wrapper_function_because_we_cant_change_the__signature,
-        (void *)i);
+    pthread_create(&thread, NULL,
+                   wrapper_function_because_we_cant_change_the__signature,
+                   (void *)i);
     reducer_threads.push_back(thread);
   }
 
@@ -90,10 +89,10 @@ void MR_Run(int num_files, char *filenames[], Mapper map, int num_mappers,
     pthread_join(t, NULL);
   }
   // done
-  
+
   // free precious memory
-  for (auto part: shared_data){
-    for (auto p: part.pairs){
+  for (auto part : shared_data) {
+    for (auto p : part.pairs) {
       free(p.first);
       free(p.second);
     }
@@ -115,8 +114,8 @@ void MR_Emit(char *key, char *value) {
   unsigned long partno = MR_Partition(key, R);
 
   // fine grained lock which locks only the partition being modified, and not
-  char* k = strdup(key); 
-  char* v = strdup(value);
+  char *k = strdup(key);
+  char *v = strdup(value);
 
   // the entire shared data structure
   pthread_mutex_lock(&shared_data[partno].mutex);
@@ -126,7 +125,7 @@ void MR_Emit(char *key, char *value) {
 
 void *wrapper_function_because_we_cant_change_the__signature(void *p) {
   int partno = (intptr_t)p;
-  
+
   MR_ProcessPartition(partno);
   pthread_exit(NULL);
   return NULL;
@@ -147,12 +146,12 @@ void MR_ProcessPartition(int partition_number) {
        it = std::upper_bound(it, shared_data[partition_number].pairs.end(), *it,
                              compareFirst)) {
 
-    char* key = it->first;
+    char *key = it->first;
 
     auto iter_pair = shared_data[partition_number].pairs.equal_range(key);
     shared_data[partition_number].it_first = iter_pair.first;
     shared_data[partition_number].it_end = iter_pair.second;
-  
+
     reducer_function(key, partition_number);
   }
 }
@@ -162,7 +161,8 @@ char *MR_GetNext(char *key, int partition_number) {
   // returns the next value associated with a given key in the sorted
   // partition returns NULL when the keys's values have been sorted correctly
 
-  if (shared_data[partition_number].it_first == shared_data[partition_number].it_end) {
+  if (shared_data[partition_number].it_first ==
+      shared_data[partition_number].it_end) {
     return NULL;
   }
 
