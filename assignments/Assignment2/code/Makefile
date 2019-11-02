@@ -1,12 +1,12 @@
-CC = clang++ -pthread
-CFLAGS = -Wall -Werror -g
+CC = g++ -pthread
+CFLAGS = -Wall -Werror -O2
 SOURCES = $(wildcard *.cpp)
 OBJECTS = $(SOURCES:%.cpp=%.o)
 
 .PHONY: clean
 
 # todo make default wc
-.DEFAULT_GOAL := compile
+.DEFAULT_GOAL := wc
 
 clean:
 	rm -f *.o wordcount valgrind-out.txt *.out
@@ -20,7 +20,7 @@ clean:
 compile: $(OBJECTS) #distwc.o
 	$(CC) -o wordcount $(OBJECTS) #distwc.o
 
-wc:
+wc: # only link the files and make the executable
 	$(CC) -o wordcount $(OBJECTS) #distwc.o
 
 leak: compile
@@ -34,8 +34,8 @@ leak: compile
 format:
 	clang-format -i *.c *.h
 
-cptest: compile
-	cp -f reeeee.cpp reeeee.h mapreduce.cpp mapreduce.h threadpool.cpp threadpool.h ../testcases
-
-#todo 
-# compress: 
+#cptest: compile
+#	cp -f reeeee.cpp reeeee.h mapreduce.cpp mapreduce.h threadpool.cpp threadpool.h ../testcases
+# 
+compress: 
+	zip mapreduce.zip Makefile readme.md mapreduce.h mapreduce.cpp threadpool.h threadpool.cpp reeeee.h reeeee.cpp

@@ -156,7 +156,9 @@ Congratulation, your mapreduce library is concurrency stable.
   if there is user error in using the mapreduce library.)
   This was actually helpful while writing the code to see which parts
   of the program were not getting correct inputs. 
-
+- the only leaks detected in my testing with valgrind were from other files
+  using the mapreduce library. Ex: originating from diswc.cpp
+  (i.e. user error in not freeiing their own memory)
 
 # Misc. Sources
 - https://stackoverflow.com/questions/9371236/is-there-an-iterator-across-unique-keys-in-a-stdmultimap
