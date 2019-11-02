@@ -84,7 +84,7 @@ void ThreadPool_destroy(ThreadPool_t *tp) {
     (void)t;
     ThreadPool_add_work(tp, (thread_func_t)kill_yourself,
                         (void *)"KILL YOURSELF");
-    std::cout<< "ADDED KILL TASK " << std::endl;
+   // std::cout<< "ADDED KILL TASK " << std::endl;
   }
   // wait for them to finish
   for (pthread_t &t : tp->threads) {

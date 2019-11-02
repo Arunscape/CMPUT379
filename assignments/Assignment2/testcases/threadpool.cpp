@@ -1,14 +1,12 @@
 #include "threadpool.h"
 #include "reeeee.h"
-#include <iostream> // todo delet me
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
+//#include <iostream>
 
 void *Thread_run(void *tp);
 
-// pthread_cond_t kill_lock;
-// pthread_mutex_t kill_mutex;
 
 bool LessThanByFileSize::operator()(const ThreadPool_work_t *t1,
                                     const ThreadPool_work_t *t2) const {
@@ -34,10 +32,8 @@ bool LessThanByFileSize::operator()(const ThreadPool_work_t *t1,
     return s1.st_size < s2.st_size;
   }
   perror("stat()");
-  //  std::cout<< "FILE 1: " << (char*) t1->arg << std::endl;
-  //  std::cout<< "FILE 2: " << (char*) t2->arg << std::endl;
   //  REEEEE("ERROR could not read file size");
-  return true; // REE will sys.exit(1) so this is to supporess a clang warning
+  return true;
 };
 
 /**
@@ -75,7 +71,7 @@ void *kill_yourself(void *k) {
   // std::cout << "I'M TRYING TO KILL MYSELF" << std::endl;
   // pthread_cond_signal(&kill_lock);
   pthread_exit(NULL);
-  std::cout << "THIS LINE SHOULD NEVER PRINT" << std::endl;
+  //std::cout << "THIS LINE SHOULD NEVER PRINT" << std::endl;
 }
 /**
  * A C style destructor to destroy a ThreadPool object
@@ -84,13 +80,11 @@ void *kill_yourself(void *k) {
  */
 void ThreadPool_destroy(ThreadPool_t *tp) {
 
-  // kill_lock = tp->workavailable;
-  // ?? somehow signal to them that the threads need to exit.
   for (auto &t : tp->threads) {
     (void)t;
     ThreadPool_add_work(tp, (thread_func_t)kill_yourself,
                         (void *)"KILL YOURSELF");
-    std::cout<< "ADDED KILL TASK " << std::endl;
+   // std::cout<< "ADDED KILL TASK " << std::endl;
   }
   // wait for them to finish
   for (pthread_t &t : tp->threads) {

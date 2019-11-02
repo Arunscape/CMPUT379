@@ -34,8 +34,8 @@ leak: compile
 format:
 	clang-format -i *.c *.h
 
-#cptest: compile
-#	cp -f reeeee.cpp reeeee.h mapreduce.cpp mapreduce.h threadpool.cpp threadpool.h ../testcases
+cptest: compile
+	cp -f reeeee.cpp reeeee.h mapreduce.cpp mapreduce.h threadpool.cpp threadpool.h ../testcases
 # 
 compress: 
 	zip mapreduce.zip Makefile readme.md mapreduce.h mapreduce.cpp threadpool.h threadpool.cpp reeeee.h reeeee.cpp
