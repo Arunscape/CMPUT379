@@ -2,4 +2,5 @@ pseudocode
 trace through code
 semaphores
 check eclass
-
+It covers Chapters 1-8 of the textbook and slides for Lectures 1-22.
+be able to analyze the performance of different schedulers and workloads
