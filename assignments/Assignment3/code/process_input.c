@@ -4,7 +4,7 @@
 
 #include "FileSystem.h"
 
-void run_command(char* line);
+void run_command(char* line, size_t line_number, const char* input_file_name);
 
 void process_input(const char* file) {
 
@@ -17,18 +17,24 @@ void process_input(const char* file) {
 	if (f == NULL) {
     fprintf(stderr, "Error: Could not read input file %s", file);
   }
- 
+  
+  size_t line_number = 0;
 	while ((line_length = getline(&line, &len, f)) != -1) {
 	  // fprintf(stdout, "Line length: %zu\n", line_length);
     // fprintf(stdout, "%s\n", line);
-    run_command(line); // &mut line
+    run_command(line, line_number, file); // &mut line
+    line_number += 1;
   }
  
 	free(line);
 	fclose(f);
 }
 
-void run_command(char* line) {
+void command_error(const char* input_file_name, size_t line_number){
+    fprintf(stderr, "Command Error: %s, %zu\n", input_file_name, line_number); 
+}
+
+void run_command(char* line, size_t line_number, const char* input_file_name) {
   
   char first_character = *line;
 
@@ -75,5 +81,5 @@ void run_command(char* line) {
    fs_cd(name);
   }
   else
-    fprintf(stderr, "Error: Invalid command: %s", line);
+    command_error(input_file_name, line_number);
 }
