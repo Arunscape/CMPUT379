@@ -1,0 +1,107 @@
+.       2
+..      2
+.       3
+..      3
+test    5 KB
+.       3
+..      3
+test    5 KB
+.       7
+..      7
+test    5 KB
+test2  10 KB
+fd1     2
+test3   6 KB
+test4   2 KB
+.       7
+..      7
+test    5 KB
+test2  10 KB
+fd1     2
+test3   6 KB
+test4   2 KB
+.       2
+..      7
+.       4
+..      7
+test    4 KB
+test2   3 KB
+.       4
+..      7
+test    4 KB
+test2   1 KB
+.       7
+..      7
+test    5 KB
+test2  10 KB
+fd1     4
+test3   6 KB
+test4   2 KB
+.       6
+..      6
+test    5 KB
+fd1     4
+test3   6 KB
+test4   2 KB
+.       4
+..      6
+test    4 KB
+test2   1 KB
+.       6
+..      6
+test    8 KB
+fd1     4
+test3   6 KB
+test4   2 KB
+.       6
+..      6
+test    3 KB
+fd1     4
+test3   6 KB
+test4   2 KB
+.       6
+..      6
+test    3 KB
+fd1     4
+test3   6 KB
+test4   2 KB
+.       6
+..      6
+test    3 KB
+fd1     4
+test3   6 KB
+test4   2 KB
+.       6
+..      6
+test    3 KB
+fd1     4
+test3   6 KB
+test4   2 KB
+.       6
+..      6
+test    3 KB
+fd1     4
+test3   6 KB
+test4   2 KB
+.       3
+..      5
+file1   4 KB
+.       5
+..      7
+fd1     3
+file1  10 KB
+file2   5 KB
+.       7
+..      7
+test    3 KB
+fd2     5
+fd1     4
+test3   6 KB
+test4   2 KB
+.       7
+..      7
+test    3 KB
+fd1     4
+test3   6 KB
+test4   2 KB
+file9   9 KB

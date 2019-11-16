@@ -1,0 +1,85 @@
+M diskthatnotexist
+B Hello World!
+L
+C test1 20
+C testerror 4
+C error
+L 4
+M clean_disk
+L
+W test
+W test 0
+C test 200
+C test 5
+W test 5
+W test 2
+L
+M diskthatnotexist
+L
+B
+B This is a test sentence.!@#$%^&*() Lots of symbols as well.
+C test2 10
+C fd1 0
+C test3 6
+C test4 2
+L
+Y fd3
+Y
+Y fd1 4
+L
+Y fd1
+L
+C test 4
+C test2 3
+W test2 1
+L
+B flush!
+R test2 1
+W test 0
+E test2 1
+Y .
+L
+Y ..
+L
+D filek
+D longername
+D
+D test2
+L
+Y fd1
+L
+Y ..
+E testeee
+E testeee 15
+E test 8
+L
+E test 3
+L
+E test 125
+L
+O
+C new 125
+L
+C test 4
+L
+R test 3
+L
+C fd2 0
+Y fd2
+C fd1 0
+C file1 10
+C file2 5
+W file2 3
+Y fd1
+C file1 4
+W file1 1
+L
+Y ..
+L
+Y ..
+L
+C file9 9
+W file9 8
+D fd2
+L
+O

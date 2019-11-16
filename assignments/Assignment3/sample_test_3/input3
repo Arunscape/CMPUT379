@@ -1,0 +1,25 @@
+M disk1
+C file1 1
+B file1_message
+W file1 0
+B different_message
+C file2 3
+E file1 10
+E file2 1
+R file1 0
+O
+C dir1 0
+Y dir1
+C file3 4
+W file3
+L
+D file3
+L
+Y ..
+L
+M disk2
+C file1
+L
+W file1
+M disk1
+L

@@ -1,0 +1,4 @@
+M disk1
+C file1 1
+B helloworld
+W file1 0

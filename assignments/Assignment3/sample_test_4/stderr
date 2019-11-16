@@ -1,0 +1,25 @@
+Error: Cannot find disk diskthatnotexist
+Error: No file system is mounted
+Error: No file system is mounted
+Error: No file system is mounted
+Command Error: trivial-input, 5
+Command Error: trivial-input, 6
+Command Error: trivial-input, 7
+Command Error: trivial-input, 10
+Error: File test does not exist
+Command Error: trivial-input, 12
+Error: test does not have block 5
+Error: Cannot find disk diskthatnotexist
+Command Error: trivial-input, 19
+Error: Directory fd3 does not exist
+Command Error: trivial-input, 27
+Command Error: trivial-input, 28
+Error: File or directory filek does not exist
+Command Error: trivial-input, 45
+Command Error: trivial-input, 46
+Command Error: trivial-input, 52
+Command Error: trivial-input, 53
+Error: File test cannot expand to size 125
+Error: Cannot allocate 125 on clean_disk
+Error: File or directory test already exists
+Error: test does not have block 3
