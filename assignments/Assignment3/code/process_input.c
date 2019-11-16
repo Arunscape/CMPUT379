@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #include "FileSystem.h"
 
@@ -41,12 +42,60 @@ void run_command(char* line, size_t line_number, const char* input_file_name) {
   char* first_token = strtok_r(line, " ", &strtok_state);
 
   if (strcmp(first_token, "M") == 0) {
+    
+    // not enough arguments
     char* new_disk_name;
+    if ( (new_disk_name = strtok_r(NULL, " ", &strtok_state)) == NULL){
+      command_error(input_file_name, line_number);
+      return;
+    }
+
+    // too many arguments
+    if ( strtok_r(NULL, " ", &strtok_state) != NULL){
+      command_error(input_file_name, line_number);
+      return;
+    }
+
     fs_mount(new_disk_name);
   }
   else if (strcmp(first_token, "C") == 0) {
-    char name[5];
-    int size;
+    
+    // file name not provided
+    char* name;
+    if ( (name = strtok_r(NULL, " ", &strtok_state)) == NULL){
+      command_error(input_file_name, line_number);
+      return;
+    }
+    
+    // file size not provided
+    char* size_str;
+    if ( (name = strtok_r(NULL, " ", &strtok_state)) == NULL){
+      command_error(input_file_name, line_number);
+      return;
+    }
+
+    char* endptr = NULL;
+    errno = 0; 
+    int size = strtol(size_str, &endptr, 10);
+
+    // unable to parse integer
+    if (errno != 0){
+      command_error(input_file_name, line_number);
+      return;
+    }
+
+    // errno == 0 at this point
+    // leftover characters after strtol
+    if (size_str && *endptr != 0){
+      command_error(input_file_name, line_number);
+      return;
+    }
+
+    // file name too long
+    if (strlen(name) > 5){
+      command_error(input_file_name, line_number);
+    }
+
     fs_create(name, size);
   }
   else if (strcmp(first_token, "D") == 0) {
