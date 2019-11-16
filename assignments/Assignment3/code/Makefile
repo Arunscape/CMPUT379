@@ -8,7 +8,7 @@ OBJECTS = $(SOURCES:%.c=%.o)
 all: fs
 
 clean:
-	rm -f *.o  *.out
+	rm -f *.o  *.out vgcore.*
 	rm -f disk0
 	./create_fs disk0
 
