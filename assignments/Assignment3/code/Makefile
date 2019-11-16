@@ -1,5 +1,5 @@
 CC = clang
-CFLAGS = -Wall
+CFLAGS = -Wall -g
 SOURCES = $(wildcard *.c)
 OBJECTS = $(SOURCES:%.c=%.o)
 
@@ -19,13 +19,13 @@ fs: $(OBJECTS)
 	$(CC) -o fs $(OBJECTS)
 
 
-# add -g to CC flags before enabling
-# leak: all
-# 	valgrind --leak-check=full \
-# 		 --show-leak-kinds=all \
-# 		 --track-origins=yes \
-# 		 --verbose \
-# 		 ./dragonshell
+ # add -g to CC flags before enabling
+leak: all
+	valgrind --leak-check=full \
+		 --show-leak-kinds=all \
+		 --track-origins=yes \
+		 --verbose \
+		 ./fs disk0
 # 		#  --log-file=valgrind-out.txt \
 
 format:

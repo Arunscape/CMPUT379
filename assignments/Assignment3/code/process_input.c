@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "FileSystem.h"
 
@@ -36,47 +37,48 @@ void command_error(const char* input_file_name, size_t line_number){
 
 void run_command(char* line, size_t line_number, const char* input_file_name) {
   
-  char first_character = *line;
+  char* strtok_state = NULL;
+  char* first_token = strtok_r(line, " ", &strtok_state);
 
-  if (first_character == 'M') {
+  if (strcmp(first_token, "M") == 0) {
     char* new_disk_name;
     fs_mount(new_disk_name);
   }
-  else if (first_character == 'C') {
+  else if (strcmp(first_token, "C") == 0) {
     char name[5];
     int size;
     fs_create(name, size);
   }
-  else if (first_character == 'D') {
+  else if (strcmp(first_token, "D") == 0) {
     char name[5];
     fs_delete(name);
   }
-  else if (first_character == 'R') {
+  else if (strcmp(first_token, "R") == 0) {
     char name[5];
     int block_num;
     fs_read(name, block_num);
   }
-  else if (first_character == 'W') {
+  else if (strcmp(first_token, "W") == 0) {
     char name[5];
     int block_num;
     fs_write(name, block_num);
   }
-  else if (first_character == 'B') {
+  else if (strcmp(first_token, "B") == 0) {
     uint8_t buff[1024];
     fs_buff(buff);
   }
-  else if (first_character == 'L') {
+  else if (strcmp(first_token, "L") == 0) {
     fs_ls();
   }
-  else if (first_character == 'E') {
+  else if (strcmp(first_token, "E") == 0) {
     char name[5];
     int new_size;
     fs_resize(name, new_size);
   }
-  else if (first_character == 'O') {
+  else if (strcmp(first_token, "O") == 0) {
     fs_defrag();
   }
-  else if (first_character == 'Y') {
+  else if (strcmp(first_token, "Y") == 0) {
    char name[5];
    fs_cd(name);
   }
