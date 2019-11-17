@@ -24,6 +24,9 @@ void process_input(const char* file) {
 	while ((line_length = getline(&line, &len, f)) != -1) {
 	  // fprintf(stdout, "Line length: %zu\n", line_length);
     // fprintf(stdout, "%s\n", line);
+
+    // strip \n
+    line = strtok(line, "\n");
     run_command(line, line_number, file); // &mut line
     line_number += 1;
   }

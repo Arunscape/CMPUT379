@@ -1,17 +1,30 @@
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
+#include "FileSystem.h"
 #include "consistency_checks.h"
 
+// globals
+Super_block* SUPER_BLOCK = NULL;
+FILE* FS;
 
 void fs_mount(char *new_disk_name){
   
   // check if a virtual disk exists with the given name in the current directory
   // if not, 
-  fprintf(stderr, "Error: Cannot find disk %s", new_disk_name);
-  return;
+  FS = fopen(new_disk_name, "rb+");
+  if (FS == NULL) {
+    perror("delete me");
+    fprintf(stderr, "Error: Cannot find disk %s", new_disk_name);
+    return;
+  }
 
   // load the superblock
+  SUPER_BLOCK = (Super_block*) malloc(sizeof (Super_block));
+  memcpy(SUPER_BLOCK, FS, 1024);
+
   
   // check for consistency of filesystem
   bool checks = do_checks();
@@ -20,9 +33,12 @@ void fs_mount(char *new_disk_name){
     //
     //
     //else if no fs was mounted successfully before
-    fprintf(stderr, "Error: No file system is mounted");
+    fprintf(stderr, "Error: No file system is mounted\n");
     return;
   } 
+
+
+  // set cwd to /
 }
 
 void fs_create(char name[5], int size){}
