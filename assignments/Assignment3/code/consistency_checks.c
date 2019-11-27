@@ -12,14 +12,29 @@ bool check_one(){
   // blocks marked in use in the free space list must be allocated to exactly
   // one file
   //
+
+  // check between free_block_list and inodes
+  // https://eclass.srv.ualberta.ca/mod/forum/discuss.php?d=1260785
   //
-  for (size_t i=0; i<126; i+=1){
-    Inode node = SUPER_BLOCK->inode[i];
-    for (uint8_t index; index < node.used_size; index += 1){
-      // for each inode, if size is nonzero
-      if (
+  for(size_t i=2; i<=128; i+=1){
+    uint8_t bit = SUPER_BLOCK->free_block_list[i/8] >> (i % 8) & 0b00000001;
+
+    if (i == 1 && bit == 0){
+      fprintf(stderr, "first block is the superblock, that can't be free\n");
+      return false;
+    }
+
+    if(bit && SUPER_BLOCK->inode[i-2].name[0] != NULL){
+        fprintf(stderr, "UHHHHHH");
+        return false;
+    }
+    else if (!bit && SUPER_BLOCK->inode[i-2].name[0] == NULL){
+        fprintf(stderr, "HMMMMMMM");
+        return false;
     }
   }
+
+  return true;
 }
 bool check_two(){
   // name of every file/directory must be unique in each directory

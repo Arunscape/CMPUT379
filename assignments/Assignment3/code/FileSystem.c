@@ -22,8 +22,9 @@ void fs_mount(char *new_disk_name){
   }
 
   // load the superblock
-  SUPER_BLOCK = (Super_block*) malloc(sizeof (Super_block));
-  memcpy(SUPER_BLOCK, FS, 1024);
+//   SUPER_BLOCK = (Super_block*) malloc(sizeof (Super_block));
+ // memcpy(SUPER_BLOCK, FS, 1024);
+  SUPER_BLOCK = (Super_block*) FS;
 
   
   // check for consistency of filesystem
@@ -41,7 +42,19 @@ void fs_mount(char *new_disk_name){
   // set cwd to /
 }
 
-void fs_create(char name[5], int size){}
+void fs_create(char name[5], int size){
+  if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0)
+    fprintf(stderr, "Error: Superblock in <disk name> is full, cannot create %s", name);
+
+  for (size_t i=0; i<126; i+=1){
+    if (strcmp(name, SUPER_BLOCK->inode[i].name) == 0){
+      fprintf(stderr, "Error: File or directory %s already exists", name);
+    }
+  }
+
+  // not enough space
+  fprintf(stderr, "Cannot allocate %d, on <disk name>", size);
+}
 void fs_delete(char name[5]){}
 void fs_read(char name[5], int block_num){}
 void fs_write(char name[5], int block_num){}
