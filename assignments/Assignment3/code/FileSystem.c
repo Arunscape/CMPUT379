@@ -11,7 +11,7 @@
 #include "consistency_checks.h"
 
 // globals
-Super_block *SUPER_BLOCK;
+Super_block *SUPER_BLOCK = NULL;
 
 int DISK_FD = -1;
 
