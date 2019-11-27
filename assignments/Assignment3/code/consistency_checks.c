@@ -6,31 +6,57 @@ extern Super_block* SUPER_BLOCK;
 extern FILE* FS;
 
 bool check_one(){
-  // blocks that are marked free in the free-space list cannot be allocated 
-  // to any file
   //
-  // blocks marked in use in the free space list must be allocated to exactly
-  // one file
   //
 
   // check between free_block_list and inodes
   // https://eclass.srv.ualberta.ca/mod/forum/discuss.php?d=1260785
   //
-  for(size_t i=2; i<=128; i+=1){
-    uint8_t bit = SUPER_BLOCK->free_block_list[i/8] >> (i % 8) & 0b00000001;
+  
+  // for each bit in the free block list, loop over the Inodes and check
+  // if it's in use
+  // direct quote from TA: efficiency is not a concern here
+  
+  // todo assert block 0 is 1 (in use)
+  //
+  for (uint8_t i=1; i< 128; i+=1){
+    uint8_t index = i / 8;
+    uint8_t shift = 7 - (i % 8);
 
-    if (i == 1 && bit == 0){
-      fprintf(stderr, "first block is the superblock, that can't be free\n");
-      return false;
-    }
+    // block is in use
+    uint8_t in_use = (SUPER_BLOCK->free_block_list[index] >> shift) & 1;
+    printf("in use: %d", in_use);
+    uint8_t usage_count = 0;
+    for (uint8_t j=0; j< 126; j+=1){
+      Inode inode = SUPER_BLOCK->inode[i];
+      
+      // if inode is a file and marked in use
+      bool inode_is_file = (inode.dir_parent >> 7) & 1;
+      bool inode_is_in_use = (inode.used_size >> 7) & 1;
 
-    if(bit && SUPER_BLOCK->inode[i-2].name[0] != NULL){
-        fprintf(stderr, "UHHHHHH");
+//      printf("inode is file: %d, inode in use: %d, start_block: %d\n",
+//          inode_is_file, inode_is_in_use, inode.start_block );
+      if ( inode_is_file && inode_is_in_use ){ 
+        uint8_t start = inode.start_block;
+        uint8_t end = inode.start_block + (inode.used_size & 0b01111111);
+
+        if ( start <= i && i < end)
+          usage_count += 1;
+      }
+
+
+      // blocks marked in use in the free space list must be allocated to             // exactly one file
+      if (in_use && usage_count != 1){
+        fprintf(stderr, "block %d was marked in use but usage count is %d\n", i, usage_count);
         return false;
-    }
-    else if (!bit && SUPER_BLOCK->inode[i-2].name[0] == NULL){
-        fprintf(stderr, "HMMMMMMM");
+      }
+
+      // blocks that are marked free in the free-space list cannot be allocated 
+      // to any file
+      if (!in_use && usage_count > 0){
+        fprintf(stderr, "block %d was marked free but usage count is %d\n", i, usage_count);
         return false;
+      }
     }
   }
 
