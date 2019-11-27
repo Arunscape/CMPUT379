@@ -1,16 +1,16 @@
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 
 typedef struct {
-	char name[5];        // Name of the file or directory
-	uint8_t used_size;   // Inode state and the size of the file or directory
-	uint8_t start_block; // Index of the start file block
-	uint8_t dir_parent;  // Inode mode and the index of the parent inode
+  char name[5];        // Name of the file or directory
+  uint8_t used_size;   // Inode state and the size of the file or directory
+  uint8_t start_block; // Index of the start file block
+  uint8_t dir_parent;  // Inode mode and the index of the parent inode
 } Inode;
 
 typedef struct {
-	char free_block_list[16];
-	Inode inode[126];
+  char free_block_list[16];
+  Inode inode[126];
 } Super_block;
 
 void fs_mount(char *new_disk_name);
