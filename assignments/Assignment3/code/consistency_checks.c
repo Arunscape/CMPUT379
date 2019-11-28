@@ -17,6 +17,10 @@ bool inode_is_directory(Inode inode){
 bool inode_is_file(Inode inode){
   return !inode_is_directory(inode);
 }
+
+bool inode_is_free(Inode inode){
+  return !inode_in_use(inode);
+}
 bool check_one() {
   // check between free_block_list and inodes
   // https://eclass.srv.ualberta.ca/mod/forum/discuss.php?d=1260785
@@ -110,6 +114,18 @@ bool check_three() {
   //
   // else the name attribute stored in the inode must have at least one bit
   // that is not zero
+  
+  for (uint8_t i=0; i<126; i+=1){
+    Inode inode = SUPER_BLOCK->inode[i];
+
+    if (inode_is_free(inode)){
+      if (inode)
+        return false;
+    } else {
+      if (inode.name[0])
+        return false;
+    }
+  }
   return true;
 }
 
