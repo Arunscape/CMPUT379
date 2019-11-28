@@ -6,21 +6,13 @@
 extern Super_block *SUPER_BLOCK;
 extern FILE *FS;
 
-bool inode_in_use(Inode inode){
-  return (inode.used_size >> 7) & 1;
-}
+bool inode_in_use(Inode inode) { return (inode.used_size >> 7) & 1; }
 
-bool inode_is_directory(Inode inode){
-  return (inode.dir_parent >> 7) & 1;
-}
+bool inode_is_directory(Inode inode) { return (inode.dir_parent >> 7) & 1; }
 
-bool inode_is_file(Inode inode){
-  return !inode_is_directory(inode);
-}
+bool inode_is_file(Inode inode) { return !inode_is_directory(inode); }
 
-bool inode_is_free(Inode inode){
-  return !inode_in_use(inode);
-}
+bool inode_is_free(Inode inode) { return !inode_in_use(inode); }
 bool check_one() {
   // check between free_block_list and inodes
   // https://eclass.srv.ualberta.ca/mod/forum/discuss.php?d=1260785
@@ -47,7 +39,7 @@ bool check_one() {
 
       // if inode is a file and marked in use
       // bool inode_is_file = (inode.dir_parent >> 7) & 1;
-      //bool inode_is_in_use = (inode.used_size >> 7) & 1;
+      // bool inode_is_in_use = (inode.used_size >> 7) & 1;
 
       // printf("inode is file: %d, inode in use: %d, start_block: %d\n",
       // inode_is_file, inode_is_in_use, inode.start_block );
@@ -82,28 +74,26 @@ bool check_one() {
 }
 bool check_two() {
   // name of every file/directory must be unique in each directory
-  
+
   // for every inode that is a directory
-  for (uint8_t i=0; i<126; i+=1){
+  for (uint8_t i = 0; i < 126; i += 1) {
     Inode inode = SUPER_BLOCK->inode[i];
-    
-    if ( inode_is_directory(inode) ){
-      for (uint8_t j=0; j<126; j+=1){
+
+    if (inode_is_directory(inode)) {
+      for (uint8_t j = 0; j < 126; j += 1) {
         if (i == j)
           continue;
         Inode other_inode = SUPER_BLOCK->inode[i];
         // if other inode is in the original inode's directory
-        if ((other_inode.dir_parent & 0b01111111) == i){
+        if ((other_inode.dir_parent & 0b01111111) == i) {
           Inode other_inode = SUPER_BLOCK->inode[i];
 
-          if (strncmp(inode.name, other_inode.name, 5) == 0){
+          if (strncmp(inode.name, other_inode.name, 5) == 0) {
             return false;
           }
         }
       }
-
     }
-    
   }
   return true;
 }
@@ -114,15 +104,18 @@ bool check_three() {
   //
   // else the name attribute stored in the inode must have at least one bit
   // that is not zero
-  
-  for (uint8_t i=0; i<126; i+=1){
+
+  for (uint8_t i = 0; i < 126; i += 1) {
     Inode inode = SUPER_BLOCK->inode[i];
 
-    if (inode_is_free(inode)){
-      if (inode)
+    if (inode_is_free(inode)) {
+      if (inode.name[0] || inode.name[1] || inode.name[2] || inode.name[3] ||
+          inode.name[4] || inode.used_size || inode.start_block ||
+          inode.dir_parent)
         return false;
     } else {
-      if (inode.name[0])
+      if (inode.name[0] || inode.name[1] || inode.name[2] || inode.name[3] ||
+          inode.name[4])
         return false;
     }
   }
