@@ -125,12 +125,27 @@ bool check_three() {
 bool check_four() {
   // the start block of every inode that is marked as a file must have a value
   // between 1 and 127 inclusive
+
+  // TODO check https://eclass.srv.ualberta.ca/mod/forum/discuss.php?d=1269743
+  for (uint8_t i=0; i< 126; i+=1){
+    Inode inode = SUPER_BLOCK->inode[i];
+    if (inode_is_file(inode) && inode_in_use(inode))
+      if (!(1 <= inode.start_block && inode.start_block <= 127))
+        return false;
+  }
   return true;
 }
 
 bool check_five() {
   // the size and start_block of an inode that is marked as a directory must be
   // zero
+
+  for (uint8_t i=0; i< 126; i+=1){
+    Inode inode = SUPER_BLOCK->inode[i];
+    if (inode_is_directory(inode) && inode_in_use(inode))
+      if (inode.used_size || inode.start_block)
+        return false;
+  }
   return true;
 }
 
@@ -138,10 +153,36 @@ bool check_six() {
   // for every inode, the index of its parent inode cannot be 126
   // also, if the index of the parent inode is between 0 and 125 inclusive,
   // then the parent inode must be in use and marked as a directory
+
+  for (uint8_t i=0; i<126; i+=1){
+    Inode inode = SUPER_BLOCK->inode[i];
+    uint8_t parent_index = inode.dir_parent & 0b01111111;
+    if (parent_index == 126)
+      return false;
+
+    if (0 <= parent_index && parent_index <= 125)
+      if (!inode_in_use(inode) || !inode_is_directory(inode))
+        return false;
+  }
   return true;
 }
 
-bool do_checks() {
-  return check_one() && check_two() && check_three() && check_four() &&
-         check_five() && check_six();
+int8_t do_checks() {
+
+  int error_code = 0;
+
+  if (!check_one())
+    error_code = 1;
+  if (!check_two())
+    error_code = 2;
+  if (!check_three())
+    error_code = 3;
+  if (!check_four())
+    error_code = 4;
+  if (!check_five())
+    error_code = 5;
+  if (!check_six())
+    error_code = 6;
+  
+  return error_code;
 }

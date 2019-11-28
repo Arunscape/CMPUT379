@@ -33,8 +33,9 @@ void fs_mount(char *new_disk_name) {
   }
 
   // check for consistency of filesystem
-  bool checks = do_checks();
-  if (!checks) {
+  int8_t error_code = do_checks();
+  if (error_code != 0) {
+    fprintf(stderr, "Error: File system in %s is inconsistent (error code: %i)\n", new_disk_name, error_code);
     // use the last filesystem that was mounted
     //
     //
