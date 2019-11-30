@@ -1,11 +1,11 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+#include "FileSystem.h"
 #include <stdbool.h>
 #include <stdint.h>
-#include "FileSystem.h"
 
-bool attempt_mount(char* new_disk_name);
+bool attempt_mount(char *new_disk_name);
 
 uint8_t inode_parent(Inode inode);
 

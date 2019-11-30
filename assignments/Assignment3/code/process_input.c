@@ -1,9 +1,9 @@
 #include <errno.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <limits.h>
 
 #include "FileSystem.h"
 
@@ -42,7 +42,7 @@ void command_error(const char *input_file_name, size_t line_number) {
   fprintf(stderr, "Command Error: %s, %zu\n", input_file_name, line_number);
 }
 
-void error_no_filesystem_mounted(){
+void error_no_filesystem_mounted() {
   fprintf(stderr, "Error: No file system is mounted\n");
 }
 
@@ -91,10 +91,9 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     errno = 0;
     long str_length = strtol(size_str, &endptr, 10);
     int size = -1;
-    if (0 <= str_length && str_length <= INT_MAX){
+    if (0 <= str_length && str_length <= INT_MAX) {
       size = str_length;
-    }
-    else {
+    } else {
       fprintf(stderr, "file size exceeds size of int lol");
     }
     printf("I got the size: %d\n", size);
@@ -127,7 +126,7 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
       return;
     }
 
-    if (DISK_FD == -1){
+    if (DISK_FD == -1) {
       error_no_filesystem_mounted();
       return;
     }

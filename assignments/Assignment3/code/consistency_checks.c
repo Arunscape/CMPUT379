@@ -121,7 +121,7 @@ bool check_four() {
   // between 1 and 127 inclusive
 
   // TODO check https://eclass.srv.ualberta.ca/mod/forum/discuss.php?d=1269743
-  for (uint8_t i=0; i< 126; i+=1){
+  for (uint8_t i = 0; i < 126; i += 1) {
     Inode inode = SUPER_BLOCK->inode[i];
     if (inode_is_file(inode) && inode_in_use(inode))
       if (!(1 <= inode.start_block && inode.start_block <= 127))
@@ -134,7 +134,7 @@ bool check_five() {
   // the size and start_block of an inode that is marked as a directory must be
   // zero
 
-  for (uint8_t i=0; i< 126; i+=1){
+  for (uint8_t i = 0; i < 126; i += 1) {
     Inode inode = SUPER_BLOCK->inode[i];
     if (inode_is_directory(inode) && inode_in_use(inode))
       if (inode.used_size || inode.start_block)
@@ -148,10 +148,10 @@ bool check_six() {
   // also, if the index of the parent inode is between 0 and 125 inclusive,
   // then the parent inode must be in use and marked as a directory
 
-  for (uint8_t i=0; i<126; i+=1){
+  for (uint8_t i = 0; i < 126; i += 1) {
     Inode inode = SUPER_BLOCK->inode[i];
     if (!inode_in_use(inode))
-        continue;
+      continue;
     uint8_t parent_index = inode.dir_parent & 0b01111111;
     if (parent_index == 126)
       return false;
@@ -179,6 +179,6 @@ int8_t do_checks() {
     error_code = 5;
   if (!check_six())
     error_code = 6;
-  
+
   return error_code;
 }
