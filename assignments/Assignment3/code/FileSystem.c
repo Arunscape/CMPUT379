@@ -72,7 +72,7 @@ void fs_create(char name[5], int size) {
         continue;
 
       bool candidate_works = true;
-      for (uint8_t j = i; j < i + size; i += 1) {
+      for (uint8_t j = i; j < i + size; j += 1) {
         if (inode_in_use(inode)) {
           candidate_works = false;
           break;
