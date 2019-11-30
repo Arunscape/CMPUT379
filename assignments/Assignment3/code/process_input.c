@@ -7,6 +7,8 @@
 
 #include "FileSystem.h"
 
+extern int DISK_FD;
+
 void run_command(char *line, size_t line_number, const char *input_file_name);
 
 void process_input(const char *file) {
@@ -18,7 +20,7 @@ void process_input(const char *file) {
 
   f = fopen(file, "r");
   if (f == NULL) {
-    fprintf(stderr, "Error: Could not read input file %s", file);
+    fprintf(stderr, "Error: Could not read input file %s\n", file);
   }
 
   size_t line_number = 0;
@@ -38,6 +40,10 @@ void process_input(const char *file) {
 
 void command_error(const char *input_file_name, size_t line_number) {
   fprintf(stderr, "Command Error: %s, %zu\n", input_file_name, line_number);
+}
+
+void error_no_filesystem_mounted(){
+  fprintf(stderr, "Error: No file system is mounted\n");
 }
 
 void run_command(char *line, size_t line_number, const char *input_file_name) {
@@ -118,6 +124,11 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     if (strtok_r(NULL, " ", &strtok_state) != NULL) {
       command_error(input_file_name, line_number);
       printf("too many arguments for create file\n");
+      return;
+    }
+
+    if (DISK_FD == -1){
+      error_no_filesystem_mounted();
       return;
     }
 

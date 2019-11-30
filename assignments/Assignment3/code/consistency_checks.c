@@ -2,17 +2,11 @@
 #include <string.h>
 
 #include "FileSystem.h"
+#include "util.h"
 
 extern Super_block *SUPER_BLOCK;
 extern FILE *FS;
 
-bool inode_in_use(Inode inode) { return (inode.used_size >> 7) & 1; }
-
-bool inode_is_directory(Inode inode) { return (inode.dir_parent >> 7) & 1; }
-
-bool inode_is_file(Inode inode) { return !inode_is_directory(inode); }
-
-bool inode_is_free(Inode inode) { return !inode_in_use(inode); }
 bool check_one() {
   // check between free_block_list and inodes
   // https://eclass.srv.ualberta.ca/mod/forum/discuss.php?d=1260785
