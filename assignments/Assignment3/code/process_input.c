@@ -70,7 +70,7 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     }
 
     // file size not provided
-    char *size_str;
+    char *size_str = NULL;
     if ((name = strtok_r(NULL, " ", &strtok_state)) == NULL) {
       command_error(input_file_name, line_number);
       return;
@@ -104,11 +104,11 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     fs_delete(name);
   } else if (strcmp(first_token, "R") == 0) {
     char name[5];
-    int block_num;
+    int block_num = 0;
     fs_read(name, block_num);
   } else if (strcmp(first_token, "W") == 0) {
     char name[5];
-    int block_num;
+    int block_num = 0;
     fs_write(name, block_num);
   } else if (strcmp(first_token, "B") == 0) {
     uint8_t buff[1024];
@@ -117,7 +117,7 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     fs_ls();
   } else if (strcmp(first_token, "E") == 0) {
     char name[5];
-    int new_size;
+    int new_size = 0;
     fs_resize(name, new_size);
   } else if (strcmp(first_token, "O") == 0) {
     fs_defrag();

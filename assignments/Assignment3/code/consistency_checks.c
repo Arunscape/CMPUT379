@@ -156,6 +156,8 @@ bool check_six() {
 
   for (uint8_t i=0; i<126; i+=1){
     Inode inode = SUPER_BLOCK->inode[i];
+    if (!inode_in_use(inode))
+        continue;
     uint8_t parent_index = inode.dir_parent & 0b01111111;
     if (parent_index == 126)
       return false;

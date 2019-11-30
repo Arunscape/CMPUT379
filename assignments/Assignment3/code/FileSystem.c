@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,37 +15,54 @@
 Super_block *SUPER_BLOCK = NULL;
 
 int DISK_FD = -1;
+char* CWD = NULL;
+
+bool attempt_mount(char* new_disk_name){
+    // check if a virtual disk exists with the given name in the current directory
+    // if not,
+    DISK_FD = open(new_disk_name, O_RDWR);
+    if (DISK_FD < 0) {
+        perror("delete me");
+        fprintf(stderr, "Error: Cannot find disk %s", new_disk_name);
+        return false;
+    }
+
+    SUPER_BLOCK = malloc(sizeof(Super_block)); // TODO free
+    if (read(DISK_FD, SUPER_BLOCK, 1024) < 0) {
+        perror("uhhh");
+        fprintf(stderr, "ERROR REEADING SUPER BLOCK\n");
+    }
+
+    // check for consistency of filesystem
+    int8_t error_code = do_checks();
+    if (error_code != 0) {
+        fprintf(stderr, "Error: File system in %s is inconsistent (error code: %i)\n", new_disk_name, error_code);
+        // use the last filesystem that was mounted
+
+        return false;
+    }
+
+    // set cwd to /
+    CWD = NULL;
+    if (asprintf(&CWD, "/") < 0){
+        perror("asprintf failed");
+        return false;
+    }
+
+    return true;
+}
 
 void fs_mount(char *new_disk_name) {
+    if (attempt_mount(new_disk_name)){
+        // successfully mounted
+        return;
+    }
 
-  // check if a virtual disk exists with the given name in the current directory
-  // if not,
-  DISK_FD = open(new_disk_name, O_RDWR);
-  if (DISK_FD < 0) {
-    perror("delete me");
-    fprintf(stderr, "Error: Cannot find disk %s", new_disk_name);
-    return;
-  }
+    // unsuccessful mount, see if filesystem was mounted before
+    if (DISK_FD == -1)
+        fprintf(stderr, "Error: No file system is mounted\n");
 
-  SUPER_BLOCK = malloc(sizeof(Super_block)); // TODO free
-  if (read(DISK_FD, SUPER_BLOCK, 1024) < 0) {
-    perror("uhhh");
-    fprintf(stderr, "ERROR REEADING SUPER BLOCK\n");
-  }
 
-  // check for consistency of filesystem
-  int8_t error_code = do_checks();
-  if (error_code != 0) {
-    fprintf(stderr, "Error: File system in %s is inconsistent (error code: %i)\n", new_disk_name, error_code);
-    // use the last filesystem that was mounted
-    //
-    //
-    // else if no fs was mounted successfully before
-    fprintf(stderr, "Error: No file system is mounted\n");
-    return;
-  }
-
-  // set cwd to /
 }
 
 void fs_create(char name[5], int size) {
