@@ -15,7 +15,7 @@
 Super_block *SUPER_BLOCK = NULL;
 
 int DISK_FD = -1;
-uint8_t CWD = 255;
+int8_t CWD = -1;
 
 void fs_mount(char *new_disk_name) {
     if (attempt_mount(new_disk_name)){
@@ -70,7 +70,7 @@ void fs_create(char name[5], int size) {
         continue;
 
       bool candidate_works = true;
-      for (uint8_t i=1; i< size; i+=1){
+      for (uint8_t j=i; j< i+ size; i+=1){
         if (inode_in_use(inode)){
           candidate_works = false;
           break;
@@ -87,6 +87,9 @@ void fs_create(char name[5], int size) {
     fprintf(stderr, "Cannot allocate %d, on <disk name>\n", size); //TODO 
       return;
     }
+
+    printf("CREATING A FILE\n");
+
 
     Inode starting_block = SUPER_BLOCK->inode[available_block];
     strncpy(starting_block.name, name, 5);
@@ -109,6 +112,8 @@ void fs_create(char name[5], int size) {
     fprintf(stderr, "Cannot allocate %d, on <disk name>\n", size);
       return;
     }
+    
+    printf("IDK WHAT IS HAPPENING\n");
 
     Inode starting_block = SUPER_BLOCK->inode[available_block];
     strncpy(starting_block.name, name, 5);
