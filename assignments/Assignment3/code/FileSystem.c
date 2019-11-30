@@ -35,16 +35,87 @@ void fs_create(char name[5], int size) {
     return;
   }
 
-  for (size_t i = 0; i < 126; i += 1) {
-    if (strcmp(name, SUPER_BLOCK->inode[i].name) == 0) {
-      fprintf(stderr, "Error: File or directory %s already exists\n", name);
+  bool free_block = false;
+  for (uint8_t i=0; i< 126; i+=1){
+    if (inode_is_free(SUPER_BLOCK->inode[i])){
+        free_block = true;
+        break;
     }
   }
 
-    fprintf(stderr,
-            "Error: Superblock in <disk name> is full, cannot create %s\n", name);
-  // not enough space
-  fprintf(stderr, "Cannot allocate %d, on <disk name>\n", size);
+  if (!free_block){
+    fprintf(stderr, "Error: Superblock in <disk name> is full, cannot create %s\n", name);
+    return;
+  }
+
+    for (uint8_t i = 0; i < 126; i += 1) {
+      Inode inode = SUPER_BLOCK->inode[i];
+
+      if (CWD != inode_parent(inode))
+        continue;
+
+      if (strcmp(name, inode.name) == 0) {
+        fprintf(stderr, "Error: File or directory %s already exists\n", name);
+        return;
+      }
+    }
+
+  if (size > 0){
+    
+    int8_t available_block = -1;
+    for (uint8_t i=0; i < 126; i+=1){
+      Inode inode = SUPER_BLOCK->inode[i];
+
+      if (!inode_is_free(inode))
+        continue;
+
+      bool candidate_works = true;
+      for (uint8_t i=1; i< size; i+=1){
+        if (inode_in_use(inode)){
+          candidate_works = false;
+          break;
+        }
+      }
+      
+      if (candidate_works){
+        available_block = i;
+        break;
+      }
+    }
+
+    if (available_block < 0){
+    fprintf(stderr, "Cannot allocate %d, on <disk name>\n", size);
+      return;
+    }
+
+    Inode starting_block = SUPER_BLOCK->inode[available_block];
+    strncpy(starting_block.name, name, 5);
+    starting_block.used_size = 0b10000000 | size;
+    starting_block.dir_parent = CWD;
+
+    for (uint8_t i = available_block + 1; i< available_block + size; i+=1){
+      SUPER_BLOCK->inode[i].used_size = 0b10000000;
+    }
+    return;
+  }
+
+  if (size == 0){
+    int8_t available_block = -1;
+    for (uint8_t i=0; i< 126; i+=1){
+      if (inode_is_free(SUPER_BLOCK->inode[i]))
+        available_block = i;
+    }
+    if (available_block < 0){
+    fprintf(stderr, "Cannot allocate %d, on <disk name>\n", size);
+      return;
+    }
+
+    Inode starting_block = SUPER_BLOCK->inode[available_block];
+    strncpy(starting_block.name, name, 5);
+    starting_block.used_size = size;
+    starting_block.dir_parent = CWD;
+    return;
+  }
 }
 void fs_delete(char name[5]) {
   for (size_t i = 0; i < 126; i += 1) {
