@@ -61,14 +61,16 @@ void fs_mount(char *new_disk_name) {
     // unsuccessful mount, see if filesystem was mounted before
     if (DISK_FD == -1)
         fprintf(stderr, "Error: No file system is mounted\n");
-
-
 }
 
 void fs_create(char name[5], int size) {
-  if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0)
-    fprintf(stderr,
-            "Error: Superblock in <disk name> is full, cannot create %s", name);
+  if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0){
+    // TODO ask TA what the error message should be
+    fprintf(stderr, ". and .. are reserved names\n");
+    return;
+  }
+
+  // i don't know what the best way to store cwd is
 
   for (size_t i = 0; i < 126; i += 1) {
     if (strcmp(name, SUPER_BLOCK->inode[i].name) == 0) {
@@ -76,6 +78,8 @@ void fs_create(char name[5], int size) {
     }
   }
 
+    fprintf(stderr,
+            "Error: Superblock in <disk name> is full, cannot create %s", name);
   // not enough space
   fprintf(stderr, "Cannot allocate %d, on <disk name>", size);
 }

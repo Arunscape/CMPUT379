@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
 
 #include "FileSystem.h"
 
@@ -50,12 +51,14 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     char *new_disk_name;
     if ((new_disk_name = strtok_r(NULL, " ", &strtok_state)) == NULL) {
       command_error(input_file_name, line_number);
+      printf("not enough arguments for mount\n");
       return;
     }
 
     // too many arguments
     if (strtok_r(NULL, " ", &strtok_state) != NULL) {
       command_error(input_file_name, line_number);
+      printf("too many arguments for mount\n");
       return;
     }
 
@@ -66,36 +69,56 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     char *name;
     if ((name = strtok_r(NULL, " ", &strtok_state)) == NULL) {
       command_error(input_file_name, line_number);
+      printf("file name not provided for create\n");
       return;
     }
 
     // file size not provided
-    char *size_str = NULL;
-    if ((name = strtok_r(NULL, " ", &strtok_state)) == NULL) {
+    char *size_str;
+    if ((size_str = strtok_r(NULL, " ", &strtok_state)) == NULL) {
       command_error(input_file_name, line_number);
+      printf("file size not provided for create\n");
       return;
     }
 
     char *endptr = NULL;
     errno = 0;
-    int size = strtol(size_str, &endptr, 10);
+    long str_length = strtol(size_str, &endptr, 10);
+    int size = -1;
+    if (0 <= str_length && str_length <= INT_MAX){
+      size = str_length;
+    }
+    else {
+      fprintf(stderr, "file size exceeds size of int lol");
+    }
+    printf("I got the size: %d\n", size);
 
     // unable to parse integer
-    if (errno != 0) {
+    if (errno != 0 || size < 0) {
       command_error(input_file_name, line_number);
+      printf("cannot parse integer in create\n");
       return;
     }
 
     // errno == 0 at this point
     // leftover characters after strtol
-    if (size_str && *endptr != 0) {
+    if (*endptr != '\0') {
       command_error(input_file_name, line_number);
+      printf("there's extra stuff\n");
       return;
     }
 
     // file name too long
     if (strlen(name) > 5) {
       command_error(input_file_name, line_number);
+      printf("file name too long\n");
+    }
+
+    // too many arguments
+    if (strtok_r(NULL, " ", &strtok_state) != NULL) {
+      command_error(input_file_name, line_number);
+      printf("too many arguments for create file\n");
+      return;
     }
 
     fs_create(name, size);
