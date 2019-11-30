@@ -51,7 +51,7 @@ void fs_create(char name[5], int size) {
     for (uint8_t i = 0; i < 126; i += 1) {
       Inode inode = SUPER_BLOCK->inode[i];
 
-      if (CWD != inode_parent(inode))
+      if (inode_parent(inode) != CWD)
         continue;
 
       if (strcmp(name, inode.name) == 0) {
@@ -60,7 +60,7 @@ void fs_create(char name[5], int size) {
       }
     }
 
-  if (size > 0){
+  if (size > 0){ // file
     
     int8_t available_block = -1;
     for (uint8_t i=0; i < 126; i+=1){
@@ -84,7 +84,7 @@ void fs_create(char name[5], int size) {
     }
 
     if (available_block < 0){
-    fprintf(stderr, "Cannot allocate %d, on <disk name>\n", size);
+    fprintf(stderr, "Cannot allocate %d, on <disk name>\n", size); //TODO 
       return;
     }
 
