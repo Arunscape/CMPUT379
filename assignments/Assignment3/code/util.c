@@ -73,7 +73,7 @@ bool block_is_free(int8_t i) {
 bool block_in_use(int8_t i) { return !block_is_free(i); }
 
 int8_t get_first_available_block() {
-  for (int8_t i = 1; i < 128; i += 1) {
+  for (uint8_t i = 1; i < 128; i += 1) {
     if (block_is_free(i))
       return i;
   }
