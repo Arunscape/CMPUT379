@@ -65,15 +65,16 @@ void fs_create(char name[5], int size) {
   if (size > 0) { // file
 
     int8_t available_block = -1;
-    for (uint8_t i = 0; i < 126; i += 1) {
+    for (uint8_t i = 1; i < 126; i += 1) {
       Inode inode = SUPER_BLOCK->inode[i];
 
-      if (!inode_is_free(inode))
+      if (inode_in_use(inode))
         continue;
 
       bool candidate_works = true;
       for (uint8_t j = i; j < i + size; j += 1) {
-        if (inode_in_use(inode)) {
+        Inode other_inode = SUPER_BLOCK->inode[j];
+        if (inode_in_use(other_inode)) {
           candidate_works = false;
           break;
         }
@@ -81,6 +82,7 @@ void fs_create(char name[5], int size) {
 
       if (candidate_works) {
         available_block = i;
+        printf("allocating to block %d\n", i);
         break;
       }
     }
@@ -92,14 +94,14 @@ void fs_create(char name[5], int size) {
 
     printf("CREATING A FILE\n");
 
-    Inode starting_block = SUPER_BLOCK->inode[available_block];
-    strncpy(starting_block.name, name, 5);
-    starting_block.used_size = 0b10000000 | size;
-    starting_block.dir_parent = CWD;
+    strncpy(SUPER_BLOCK->inode[available_block].name, name, 5);
+    SUPER_BLOCK->inode[available_block].used_size = 0b10000000 | size;
+    SUPER_BLOCK->inode[available_block].dir_parent = CWD;
 
     for (uint8_t i = available_block + 1; i < available_block + size; i += 1) {
       SUPER_BLOCK->inode[i].used_size = 0b10000000;
     }
+    write_superblock();
     return;
   }
 
@@ -116,10 +118,10 @@ void fs_create(char name[5], int size) {
 
     printf("IDK WHAT IS HAPPENING\n");
 
-    Inode starting_block = SUPER_BLOCK->inode[available_block];
-    strncpy(starting_block.name, name, 5);
-    starting_block.used_size = size;
-    starting_block.dir_parent = CWD;
+    strncpy(SUPER_BLOCK->inode[available_block].name, name, 5);
+    SUPER_BLOCK->inode[available_block].used_size = size;
+    SUPER_BLOCK->inode[available_block].dir_parent = CWD;
+    write_superblock();
     return;
   }
 }

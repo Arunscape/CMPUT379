@@ -14,4 +14,6 @@ bool inode_is_free(Inode inode);
 
 bool inode_is_directory(Inode inode);
 bool inode_is_file(Inode inode);
+
+void write_superblock();
 #endif

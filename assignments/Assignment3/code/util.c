@@ -55,3 +55,9 @@ bool inode_is_free(Inode inode) { return !inode_in_use(inode); }
 
 bool inode_is_directory(Inode inode) { return (inode.dir_parent >> 7) & 1; }
 bool inode_is_file(Inode inode) { return !inode_is_directory(inode); }
+
+void write_superblock() {
+  if (write(DISK_FD, SUPER_BLOCK, 1024) < 0) {
+    fprintf(stderr, "WHAT");
+  }
+}
