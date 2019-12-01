@@ -50,7 +50,9 @@ bool attempt_mount(char *new_disk_name) {
 
 uint8_t inode_parent(Inode inode) { return inode.dir_parent & 0b01111111; }
 
-bool inode_in_use(Inode inode) { return (inode.used_size >> 7) & 1; }
+bool inode_in_use(Inode inode) { 
+  return (inode.used_size >> 7) & 1; 
+}
 bool inode_is_free(Inode inode) { return !inode_in_use(inode); }
 
 bool inode_is_directory(Inode inode) { return (inode.dir_parent >> 7) & 1; }
@@ -60,4 +62,43 @@ void write_superblock() {
   if (write(DISK_FD, SUPER_BLOCK, 1024) < 0) {
     fprintf(stderr, "WHAT");
   }
+}
+
+bool block_is_free(int8_t i){
+    int8_t index = i/8;
+    int8_t shift = 7 - (i%8);
+    int8_t in_use = (SUPER_BLOCK->free_block_list[index] >> shift) & 1;
+
+    return in_use;
+}
+
+int8_t get_first_available_block(){
+  for (int8_t i=1; i<128; i+=1){
+    if (block_is_free(i))
+      return i;
+  }
+  return -1; // no blocks available
+}
+
+int8_t get_first_available_inode(){
+  for (int8_t i=0; i<126; i+=1){
+    Inode inode = SUPER_BLOCK->inode[i];
+    if (inode_is_free(inode))
+      return i;
+  }
+  return -1; // no inodes available
+}
+
+bool is_a_duplicate(char* name){
+  for (uint8_t i = 0; i < 126; i += 1) {
+    Inode inode = SUPER_BLOCK->inode[i];
+
+    if (inode_parent(inode) != CWD)
+      continue;
+
+    if (strcmp(name, inode.name) == 0) {
+      return true;
+    }
+  }
+  return false;
 }

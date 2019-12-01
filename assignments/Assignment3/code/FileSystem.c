@@ -34,65 +34,30 @@ void fs_create(char name[5], int size) {
     fprintf(stderr, ". and .. are reserved names\n");
     return;
   }
-
-  bool free_block = false;
-  for (uint8_t i = 0; i < 126; i += 1) {
-    if (inode_is_free(SUPER_BLOCK->inode[i])) {
-      free_block = true;
-      break;
-    }
-  }
-
-  if (!free_block) {
+  
+  // you should check the availability of a free inode
+  int8_t first_available_inode = get_first_available_inode();
+  if (first_available_inode < 0) {
     fprintf(stderr,
             "Error: Superblock in <disk name> is full, cannot create %s\n",
             name);
     return;
   }
 
-  for (uint8_t i = 0; i < 126; i += 1) {
-    Inode inode = SUPER_BLOCK->inode[i];
-
-    if (inode_parent(inode) != CWD)
-      continue;
-
-    if (strcmp(name, inode.name) == 0) {
-      fprintf(stderr, "Error: File or directory %s already exists\n", name);
-      return;
-    }
+  if (is_a_duplicate(name)){
+    fprintf(stderr, "Error: File or directory %s already exists\n", name);
+    return;
+  }
+  
+  int8_t first_available_block = get_first_available_block();
+  if (first_available_block < 0){
+    fprintf(stderr, "Error: Cannot allocate %d, on <TODO GET DISK NAME>", size);
   }
 
   if (size > 0) { // file
 
     int8_t available_block = -1;
-    for (uint8_t i = 1; i < 126; i += 1) {
-      Inode inode = SUPER_BLOCK->inode[i];
-
-      if (inode_in_use(inode))
-        continue;
-
-      bool candidate_works = true;
-      for (uint8_t j = i; j < i + size; j += 1) {
-        Inode other_inode = SUPER_BLOCK->inode[j];
-        if (inode_in_use(other_inode)) {
-          candidate_works = false;
-          break;
-        }
-      }
-
-      if (candidate_works) {
-        available_block = i;
-        printf("allocating to block %d\n", i);
-        break;
-      }
-    }
-
-    if (available_block < 0) {
-      fprintf(stderr, "Cannot allocate %d, on <disk name>\n", size); // TODO
-      return;
-    }
-
-    printf("CREATING A FILE\n");
+    for (uint8_t i=1; i<128; i+=1){}
 
     strncpy(SUPER_BLOCK->inode[available_block].name, name, 5);
     SUPER_BLOCK->inode[available_block].used_size = 0b10000000 | size;
