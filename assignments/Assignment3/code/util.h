@@ -18,9 +18,16 @@ bool inode_is_file(Inode inode);
 void write_superblock();
 
 bool block_is_free(int8_t i);
+bool block_in_use(int8_t i);
 
 int8_t get_first_available_block();
 int8_t get_first_available_inode();
 
-bool is_a_duplicate(char* name);
+bool is_a_duplicate(char *name);
+
+void update_inode(int8_t i, char name[5], uint8_t size, uint8_t start_block,
+                  uint8_t dir_parent, bool used, bool is_directory);
+
+void update_blocks(uint8_t start, uint8_t end, bool set);
+
 #endif

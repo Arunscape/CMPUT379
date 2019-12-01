@@ -34,7 +34,7 @@ void fs_create(char name[5], int size) {
     fprintf(stderr, ". and .. are reserved names\n");
     return;
   }
-  
+
   // you should check the availability of a free inode
   int8_t first_available_inode = get_first_available_inode();
   if (first_available_inode < 0) {
@@ -44,48 +44,53 @@ void fs_create(char name[5], int size) {
     return;
   }
 
-  if (is_a_duplicate(name)){
+  if (is_a_duplicate(name)) {
     fprintf(stderr, "Error: File or directory %s already exists\n", name);
     return;
   }
-  
+
   int8_t first_available_block = get_first_available_block();
-  if (first_available_block < 0){
+  if (first_available_block < 0) {
     fprintf(stderr, "Error: Cannot allocate %d, on <TODO GET DISK NAME>", size);
+    return;
   }
 
   if (size > 0) { // file
 
-    int8_t available_block = -1;
-    for (uint8_t i=1; i<128; i+=1){}
+    int8_t start_block = -1;
+    for (uint8_t candidate = first_available_block; candidate < 128;
+         candidate += 1) {
+      bool candidate_works = true;
+      for (int8_t i = candidate; i < candidate + size; i += 1) {
+        if (block_in_use(i)) {
+          candidate_works = false;
+          break;
+        }
+      }
 
-    strncpy(SUPER_BLOCK->inode[available_block].name, name, 5);
-    SUPER_BLOCK->inode[available_block].used_size = 0b10000000 | size;
-    SUPER_BLOCK->inode[available_block].dir_parent = CWD;
-
-    for (uint8_t i = available_block + 1; i < available_block + size; i += 1) {
-      SUPER_BLOCK->inode[i].used_size = 0b10000000;
+      if (candidate_works) {
+        start_block = candidate;
+        break;
+      }
     }
+
+    if (start_block < 0) {
+      fprintf(stderr, "Error: Cannot allocate %d, on <TODO GET DISK NAME>",
+              size);
+      return;
+    }
+
+    update_inode(first_available_inode, name, size, start_block, CWD, true,
+                 false);
+
+    update_blocks(start_block, start_block + size, true);
     write_superblock();
     return;
   }
 
-  if (size == 0) {
-    int8_t available_block = -1;
-    for (uint8_t i = 0; i < 126; i += 1) {
-      if (inode_is_free(SUPER_BLOCK->inode[i]))
-        available_block = i;
-    }
-    if (available_block < 0) {
-      fprintf(stderr, "Cannot allocate %d, on <disk name>\n", size);
-      return;
-    }
+  if (size == 0) { // directory
 
-    printf("IDK WHAT IS HAPPENING\n");
-
-    strncpy(SUPER_BLOCK->inode[available_block].name, name, 5);
-    SUPER_BLOCK->inode[available_block].used_size = size;
-    SUPER_BLOCK->inode[available_block].dir_parent = CWD;
+    update_inode(first_available_inode, name, size, 0, CWD, true, true);
     write_superblock();
     return;
   }
