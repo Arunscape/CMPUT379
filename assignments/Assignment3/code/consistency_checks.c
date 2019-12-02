@@ -173,8 +173,10 @@ int8_t do_checks() {
   }
   if (!check_two())
     return 2;
-  if (!check_three())
+  if (!check_three()){
+    printf("WHY IS THIS RETURNING 1\n");
     return 3;
+  }
   if (!check_four())
     return 4;
   if (!check_five())

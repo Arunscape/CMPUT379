@@ -11,6 +11,7 @@ clean:
 	rm -f *.o  *.out vgcore.*
 	rm -f disk0
 	./create_fs disk0
+	chmod 777 disk0
 
 %.o: %.c
 	${CC} ${CFLAGS} -c $< -o $@
