@@ -97,7 +97,6 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     } else {
       fprintf(stderr, "file size exceeds size of int lol");
     }
-    printf("I got the size: %d\n", size);
 
     // unable to parse integer
     if (errno != 0 || size < 0) {

@@ -17,7 +17,7 @@ bool check_one() {
 
   // assert superblock is marked in use in free space list
   if (((SUPER_BLOCK->free_block_list[0] >> 7) & 1) != 1) {
-    fprintf(stderr, "block 0 isn't marked as used\n");
+    fprintf(stderr, "check 1: block 0 isn't marked as used\n");
     return false;
   }
 
@@ -42,9 +42,11 @@ bool check_one() {
       if (inode_is_file(inode) && inode_in_use(inode)) {
         uint8_t start = inode.start_block;
         uint8_t end = inode.start_block + (inode.used_size & 0b01111111);
-        
-//        printf("inspecting inode %d, name: %s, size: %u, start: %u, parent: %u\n", j, inode.name, inode.used_size, inode.start_block, inode.dir_parent);
-//        printf("start: %u, block: %u, end: %u\n", start, i, end);
+
+        //        printf("inspecting inode %d, name: %s, size: %u, start: %u,
+        //        parent: %u\n", j, inode.name, inode.used_size,
+        //        inode.start_block, inode.dir_parent); printf("start: %u,
+        //        block: %u, end: %u\n", start, i, end);
         if (start <= i && i < end)
           usage_count += 1;
       }
@@ -52,7 +54,8 @@ bool check_one() {
       // blocks marked in use in the free space list must be allocated to //
       // exactly one file
       if (in_use && usage_count != 1) {
-        fprintf(stderr, "block %u was marked in use but usage count is %u\n", i,
+        fprintf(stderr,
+                "check1: block %u was marked in use but usage count is %u\n", i,
                 usage_count);
         return false;
       }
@@ -60,7 +63,8 @@ bool check_one() {
       // blocks that are marked free in the free-space list cannot be allocated
       // to any file
       if (!in_use && usage_count > 0) {
-        fprintf(stderr, "block %d was marked free but usage count is %d\n", i,
+        fprintf(stderr,
+                "check1: block %d was marked free but usage count is %d\n", i,
                 usage_count);
         return false;
       }
@@ -85,6 +89,7 @@ bool check_two() {
           Inode other_inode = SUPER_BLOCK->inode[i];
 
           if (strncmp(inode.name, other_inode.name, 5) == 0) {
+            fprintf(stderr, "check2: non unique filename/directory\n");
             return false;
           }
         }
@@ -107,12 +112,17 @@ bool check_three() {
     if (inode_is_free(inode)) {
       if (inode.name[0] || inode.name[1] || inode.name[2] || inode.name[3] ||
           inode.name[4] || inode.used_size || inode.start_block ||
-          inode.dir_parent)
+          inode.dir_parent) {
+        fprintf(stderr, "inode %d is marked free, but its not zeroed out\n", i);
         return false;
+      }
     } else {
-      if (inode.name[0] || inode.name[1] || inode.name[2] || inode.name[3] ||
-          inode.name[4])
+      if ((inode.name[0] || inode.name[1] || inode.name[2] || inode.name[3] ||
+           inode.name[4]) == 0) {
+        fprintf(stderr, "inode %d is marked used, but its name is zeroed out\n",
+                i);
         return false;
+      }
     }
   }
   return true;
@@ -167,16 +177,12 @@ bool check_six() {
 
 int8_t do_checks() {
 
-  if (!check_one()){
-    printf("CHECK ONE FAILED\n");
+  if (!check_one())
     return 1;
-  }
   if (!check_two())
     return 2;
-  if (!check_three()){
-    printf("WHY IS THIS RETURNING 1\n");
+  if (!check_three())
     return 3;
-  }
   if (!check_four())
     return 4;
   if (!check_five())

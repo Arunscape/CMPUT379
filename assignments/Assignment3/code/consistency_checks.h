@@ -1,7 +1,7 @@
 #ifndef PROCESS_INPUT_H
 #define PROCESS_INPUT_H
-#include <stdbool.h>
+#include <stdint.h>
 
-bool do_checks();
+int8_t do_checks();
 
 #endif

@@ -10,8 +10,6 @@
 
 #include <sys/types.h>
 
-
-
 #include "FileSystem.h"
 #include "util.h"
 
@@ -43,7 +41,7 @@ void fs_create(char name[5], int size) {
   uint8_t first_available_inode = get_first_available_inode();
   if (first_available_inode < 0) {
 
-    printf("NO INODES AVAILABLE\n"); // TODO
+    printf("create: NO INODES AVAILABLE\n"); // TODO
 
     fprintf(stderr,
             "Error: Superblock in <disk name> is full, cannot create %s\n",
@@ -57,9 +55,8 @@ void fs_create(char name[5], int size) {
   }
 
   int8_t first_available_block = get_first_available_block();
-  printf("first availabile blocl: %d\n", first_available_block); //TODO
   if (first_available_block < 0) {
-    printf("NO BLOCKS AVAILABLE\n"); // TODO
+    printf("create: NO BLOCKS AVAILABLE\n"); // TODO
     fprintf(stderr, "Error: Cannot allocate %d, on <TODO GET DISK NAME>", size);
     return;
   }
@@ -77,17 +74,14 @@ void fs_create(char name[5], int size) {
           break;
         }
       }
-        
-      printf("hey do I get run\n");
+
       if (candidate_works) {
-        printf("candidate %d works\n", candidate);
         start_block = candidate;
         break;
       }
     }
 
     if (start_block > 127) {
-      printf("START BLOCK NOT FOUND\n"); // TODO
       fprintf(stderr, "Error: Cannot allocate %d, on <TODO GET DISK NAME>",
               size);
       return;
@@ -99,7 +93,6 @@ void fs_create(char name[5], int size) {
     update_blocks(start_block, start_block + size, true);
 
     write_superblock();
-
 
     return;
   }

@@ -15,13 +15,13 @@ extern int DISK_FD;
 extern int CWD;
 extern Super_block *SUPER_BLOCK;
 
-void seek_beginning_file(){
-  if ( lseek(DISK_FD, 0, SEEK_SET) < -1 ){
+void seek_beginning_file() {
+  if (lseek(DISK_FD, 0, SEEK_SET) < -1) {
     perror("error seeking to beginning of file");
   }
 }
 
-void load_superblock(){
+void load_superblock() {
   if (read(DISK_FD, SUPER_BLOCK, sizeof(Super_block)) < 0) {
     perror("error reading superblock");
   }
@@ -44,9 +44,10 @@ bool attempt_mount(char *new_disk_name) {
 
   // check for consistency of filesystem
   int8_t error_code = do_checks();
+  printf("error code: %d\n", error_code);
   if (error_code != 0) {
     fprintf(stderr,
-            "Error: File system in %s is inconsistent (error code: %d)\n",
+            "Error: File system in %s is inconsistent (error code: %hhd)\n",
             new_disk_name, error_code);
     // use the last filesystem that was mounted
     return false;
@@ -77,8 +78,8 @@ bool block_in_use(uint8_t i) {
   uint8_t index = i / 8;
   uint8_t shift = 7 - (i % 8);
   uint8_t in_use = (SUPER_BLOCK->free_block_list[index] >> shift) & 1;
-  
-  //printf("block: %d, %u, index %d in use: %d\n",
+
+  // printf("block: %d, %u, index %d in use: %d\n",
   //    index, (uint8_t) SUPER_BLOCK->free_block_list[index], i, in_use);
   return in_use;
 }
@@ -118,7 +119,7 @@ bool is_a_duplicate(char *name) {
 
 void update_inode(uint8_t i, char name[5], uint8_t size, uint8_t start_block,
                   uint8_t dir_parent, bool used, bool is_directory) {
-  
+
   Inode *inode = &SUPER_BLOCK->inode[i];
   strncpy(inode->name, name, 5);
   inode->used_size = size;
@@ -138,9 +139,7 @@ void update_inode(uint8_t i, char name[5], uint8_t size, uint8_t start_block,
   printf("start block: %d\n", inode->start_block);
   printf("parent dir: %d\n", inode->dir_parent);
   */
-
 }
-
 
 void update_blocks(uint8_t start, uint8_t end, bool set) {
   for (uint8_t i = start; i < end; i += 1) {
@@ -148,11 +147,11 @@ void update_blocks(uint8_t start, uint8_t end, bool set) {
     uint8_t bitmask = 1 << (7 - (i % 8));
     if (set) {
       //
-      //printf("bit: %i, bitmask: %u\n", i, bitmask);
+      // printf("bit: %i, bitmask: %u\n", i, bitmask);
       SUPER_BLOCK->free_block_list[index] =
           SUPER_BLOCK->free_block_list[index] | bitmask;
-      //uint8_t idk = (uint8_t) SUPER_BLOCK->free_block_list[index];
-      //printf("setting block %d to %u\n", index, idk);
+      // uint8_t idk = (uint8_t) SUPER_BLOCK->free_block_list[index];
+      // printf("setting block %d to %u\n", index, idk);
     } else {
       bitmask = bitmask ^ 0b11111111;
       SUPER_BLOCK->free_block_list[index] =
@@ -160,6 +159,6 @@ void update_blocks(uint8_t start, uint8_t end, bool set) {
     }
   }
 
-  //for (int i=0; i<16; i+=1)
+  // for (int i=0; i<16; i+=1)
   //  printf("block %d : %u\n", i, (uint8_t) SUPER_BLOCK->free_block_list[i]);
 }
