@@ -22,11 +22,6 @@ bool check_one() {
   }
 
   for (uint8_t i = 1; i < 128; i += 1) {
-    uint8_t index = i / 8;
-    uint8_t shift = 7 - (i % 8);
-
-    // block is in use
-    uint8_t in_use = (SUPER_BLOCK->free_block_list[index] >> shift) & 1;
     // printf("in use: %d", in_use);
     uint8_t usage_count = 0;
     for (uint8_t j = 0; j < 126; j += 1) {
@@ -53,7 +48,7 @@ bool check_one() {
 
       // blocks marked in use in the free space list must be allocated to //
       // exactly one file
-      if (in_use && usage_count != 1) {
+      if (block_in_use(i) && usage_count != 1) {
         fprintf(stderr,
                 "check1: block %u was marked in use but usage count is %u\n", i,
                 usage_count);
@@ -62,7 +57,7 @@ bool check_one() {
 
       // blocks that are marked free in the free-space list cannot be allocated
       // to any file
-      if (!in_use && usage_count > 0) {
+      if (block_is_free(i) && usage_count > 0) {
         fprintf(stderr,
                 "check1: block %d was marked free but usage count is %d\n", i,
                 usage_count);
