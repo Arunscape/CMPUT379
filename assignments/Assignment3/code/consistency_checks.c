@@ -38,10 +38,11 @@ bool check_one() {
         uint8_t start = inode.start_block;
         uint8_t end = inode.start_block + (inode.used_size & 0b01111111);
 
-        //        printf("inspecting inode %d, name: %s, size: %u, start: %u,
-        //        parent: %u\n", j, inode.name, inode.used_size,
-        //        inode.start_block, inode.dir_parent); printf("start: %u,
-        //        block: %u, end: %u\n", start, i, end);
+        //printf(
+        //  "inspecting inode %d, name: %s, size: %u, start: %u,parent: %u\n",
+        //  j, inode.name, inode.used_size, inode.start_block,
+        //  inode.dir_parent);
+        //printf("start: %u, block: %u, end: %u\n", start, i, end);
         if (start <= i && i < end)
           usage_count += 1;
       }

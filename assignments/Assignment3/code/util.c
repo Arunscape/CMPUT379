@@ -130,6 +130,8 @@ bool is_a_duplicate(char *name) {
 void update_inode(uint8_t i, char name[5], uint8_t size, uint8_t start_block,
                   uint8_t dir_parent, bool used, bool is_directory) {
 
+  fprintf(stderr, "INODE SIZE SET TO %u\n", size);
+
   Inode *inode = &SUPER_BLOCK->inode[i];
   strncpy(inode->name, name, 5);
   inode->used_size = size;
@@ -139,6 +141,7 @@ void update_inode(uint8_t i, char name[5], uint8_t size, uint8_t start_block,
   if (used)
     inode->used_size = inode->used_size | 0b10000000;
 
+  fprintf(stderr, "INODE SIZE IS NOW %u\n", inode->used_size);
   if (is_directory)
     inode->dir_parent = inode->dir_parent | 0b10000000;
 
@@ -152,6 +155,7 @@ void update_inode(uint8_t i, char name[5], uint8_t size, uint8_t start_block,
 }
 
 void update_blocks(uint8_t start, uint8_t end, bool set) {
+  fprintf(stderr, "SETTING BLOCKS %u to %u to %d\n", start, end -1, set);
   for (uint8_t i = start; i < end; i += 1) {
     uint8_t index = i / 8;
     uint8_t bitmask = 1 << (7 - (i % 8));

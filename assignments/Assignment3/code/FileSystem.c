@@ -43,6 +43,7 @@ void fs_create(char name[5], int size) {
 
   // you should check the availability of a free inode
   uint8_t first_available_inode = get_first_available_inode();
+  printf("WRITING TO INODE %u\n", first_available_inode);
   if (first_available_inode < 0) {
 
     printf("create: NO INODES AVAILABLE\n"); // TODO
@@ -85,7 +86,7 @@ void fs_create(char name[5], int size) {
       }
     }
 
-    if (start_block > 127) {
+    if (start_block > 127 || (start_block + size - 1 > 127)) {
       fprintf(stderr, "Error: Cannot allocate %d, on <TODO GET DISK NAME>",
               size);
       return;
