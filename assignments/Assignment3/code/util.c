@@ -26,7 +26,8 @@ bool attempt_mount(char *new_disk_name) {
   }
 
   SUPER_BLOCK = malloc(sizeof(Super_block)); // TODO free
-  if (read(DISK_FD, SUPER_BLOCK, 1024) < 0) {
+
+  if (read(DISK_FD, SUPER_BLOCK, sizeof(Super_block)) < 0) {
     perror("uhhh");
     fprintf(stderr, "ERROR REEADING SUPER BLOCK\n");
   }
@@ -57,7 +58,7 @@ bool inode_is_directory(Inode inode) { return (inode.dir_parent >> 7) & 1; }
 bool inode_is_file(Inode inode) { return !inode_is_directory(inode); }
 
 void write_superblock() {
-  if (write(DISK_FD, SUPER_BLOCK, 1024) < 0) {
+  if (write(DISK_FD, SUPER_BLOCK, sizeof(Super_block)) < 0) {
     fprintf(stderr, "WHAT");
   }
 }
@@ -66,7 +67,9 @@ bool block_in_use(uint8_t i) {
   uint8_t index = i / 8;
   uint8_t shift = 7 - (i % 8);
   uint8_t in_use = (SUPER_BLOCK->free_block_list[index] >> shift) & 1;
-
+  
+  //printf("block: %d, %u, index %d in use: %d\n",
+  //    index, (uint8_t) SUPER_BLOCK->free_block_list[index], i, in_use);
   return in_use;
 }
 
@@ -147,6 +150,6 @@ void update_blocks(uint8_t start, uint8_t end, bool set) {
     }
   }
 
-  for (int i=0; i<16; i+=1)
-    printf("block %d : %u\n", i, (uint8_t) SUPER_BLOCK->free_block_list[i]);
+  //for (int i=0; i<16; i+=1)
+  //  printf("block %d : %u\n", i, (uint8_t) SUPER_BLOCK->free_block_list[i]);
 }

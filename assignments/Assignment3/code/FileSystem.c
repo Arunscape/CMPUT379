@@ -8,6 +8,10 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
+#include <sys/types.h>
+
+
+
 #include "FileSystem.h"
 #include "util.h"
 
@@ -99,6 +103,17 @@ void fs_create(char name[5], int size) {
     //  printf("block %d in use: %d\n", i, block_in_use(i));
     //
     write_superblock();
+
+
+    // TODO
+    close(DISK_FD);
+    DISK_FD = open("disk0", O_RDWR);
+    Super_block* kms = malloc(sizeof(Super_block));
+    read(DISK_FD, kms, sizeof(Super_block));
+    for (int i=0; i<128; i+=1)
+      printf("block %d in use: %d\n", i, block_in_use(i));
+
+    printf("FIRST AVAILABLE BLOCK: %d", get_first_available_block());
     return;
   }
 
