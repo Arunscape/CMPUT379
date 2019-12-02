@@ -28,9 +28,19 @@ void load_superblock() {
   seek_beginning_file();
 }
 
+bool no_filesystem_mounted(){
+  if (DISK_FD == -1){
+    fprintf(stderr, "Error: No file system is mounted\n");
+    return true;
+  }
+  return false;
+}
+
 bool attempt_mount(char *new_disk_name) {
   // check if a virtual disk exists with the given name in the current directory
   // if not,
+  int old_disk_fd = DISK_FD;
+
   DISK_FD = open(new_disk_name, O_RDWR);
   if (DISK_FD < 0) {
     perror("delete me");
@@ -50,6 +60,7 @@ bool attempt_mount(char *new_disk_name) {
             "Error: File system in %s is inconsistent (error code: %hhd)\n",
             new_disk_name, error_code);
     // use the last filesystem that was mounted
+    DISK_FD = old_disk_fd;
     return false;
   }
 

@@ -26,11 +26,15 @@ void fs_mount(char *new_disk_name) {
   }
 
   // unsuccessful mount, see if filesystem was mounted before
-  if (DISK_FD == -1)
-    fprintf(stderr, "Error: No file system is mounted\n");
+  // if (DISK_FD == -1)
+  //  fprintf(stderr, "Error: No file system is mounted\n");
 }
 
 void fs_create(char name[5], int size) {
+  if (no_filesystem_mounted()){
+    return;
+  }
+
   if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0) {
     // TODO ask TA what the error message should be
     fprintf(stderr, ". and .. are reserved names\n");
