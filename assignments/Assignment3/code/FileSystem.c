@@ -36,8 +36,11 @@ void fs_create(char name[5], int size) {
   }
 
   // you should check the availability of a free inode
-  int8_t first_available_inode = get_first_available_inode();
+  uint8_t first_available_inode = get_first_available_inode();
   if (first_available_inode < 0) {
+
+    printf("NO INODES AVAILABLE\n"); // TODO
+
     fprintf(stderr,
             "Error: Superblock in <disk name> is full, cannot create %s\n",
             name);
@@ -50,31 +53,37 @@ void fs_create(char name[5], int size) {
   }
 
   int8_t first_available_block = get_first_available_block();
+  printf("first availabile blocl: %d\n", first_available_block); //TODO
   if (first_available_block < 0) {
+    printf("NO BLOCKS AVAILABLE\n"); // TODO
     fprintf(stderr, "Error: Cannot allocate %d, on <TODO GET DISK NAME>", size);
     return;
   }
 
   if (size > 0) { // file
 
-    int8_t start_block = -1;
+    uint8_t start_block = 255;
     for (uint8_t candidate = first_available_block; candidate < 128;
          candidate += 1) {
       bool candidate_works = true;
-      for (int8_t i = candidate; i < candidate + size; i += 1) {
+      for (uint8_t i = candidate; i < candidate + size; i += 1) {
         if (block_in_use(i)) {
           candidate_works = false;
+          fprintf(stderr, "Block %d in use\n", i); // TODO
           break;
         }
       }
-
+        
+      printf("hey do I get run\n");
       if (candidate_works) {
+        printf("candidate %d works\n", candidate);
         start_block = candidate;
         break;
       }
     }
 
-    if (start_block < 0) {
+    if (start_block > 127) {
+      printf("START BLOCK NOT FOUND\n"); // TODO
       fprintf(stderr, "Error: Cannot allocate %d, on <TODO GET DISK NAME>",
               size);
       return;
@@ -84,6 +93,11 @@ void fs_create(char name[5], int size) {
                  false);
 
     update_blocks(start_block, start_block + size, true);
+
+    //TODO remove me
+    // for (int i=0; i<128; i+=1)
+    //  printf("block %d in use: %d\n", i, block_in_use(i));
+    //
     write_superblock();
     return;
   }
