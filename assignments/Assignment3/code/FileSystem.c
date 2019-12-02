@@ -31,7 +31,7 @@ void fs_mount(char *new_disk_name) {
 }
 
 void fs_create(char name[5], int size) {
-  if (no_filesystem_mounted()){
+  if (no_filesystem_mounted()) {
     return;
   }
 

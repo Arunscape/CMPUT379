@@ -28,8 +28,8 @@ void load_superblock() {
   seek_beginning_file();
 }
 
-bool no_filesystem_mounted(){
-  if (DISK_FD == -1){
+bool no_filesystem_mounted() {
+  if (DISK_FD == -1) {
     fprintf(stderr, "Error: No file system is mounted\n");
     return true;
   }
@@ -54,7 +54,6 @@ bool attempt_mount(char *new_disk_name) {
 
   // check for consistency of filesystem
   int8_t error_code = do_checks();
-  printf("error code: %d\n", error_code);
   if (error_code != 0) {
     fprintf(stderr,
             "Error: File system in %s is inconsistent (error code: %hhd)\n",
