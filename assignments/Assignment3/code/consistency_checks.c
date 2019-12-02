@@ -17,6 +17,7 @@ bool check_one() {
 
   // assert superblock is marked in use in free space list
   if (((SUPER_BLOCK->free_block_list[0] >> 7) & 1) != 1) {
+    fprintf(stderr, "block 0 isn't marked as used\n");
     return false;
   }
 
@@ -29,7 +30,7 @@ bool check_one() {
     // printf("in use: %d", in_use);
     uint8_t usage_count = 0;
     for (uint8_t j = 0; j < 126; j += 1) {
-      Inode inode = SUPER_BLOCK->inode[i];
+      Inode inode = SUPER_BLOCK->inode[j];
 
       // if inode is a file and marked in use
       // bool inode_is_file = (inode.dir_parent >> 7) & 1;
@@ -41,7 +42,9 @@ bool check_one() {
       if (inode_is_file(inode) && inode_in_use(inode)) {
         uint8_t start = inode.start_block;
         uint8_t end = inode.start_block + (inode.used_size & 0b01111111);
-
+        
+//        printf("inspecting inode %d, name: %s, size: %u, start: %u, parent: %u\n", j, inode.name, inode.used_size, inode.start_block, inode.dir_parent);
+//        printf("start: %u, block: %u, end: %u\n", start, i, end);
         if (start <= i && i < end)
           usage_count += 1;
       }
@@ -49,7 +52,7 @@ bool check_one() {
       // blocks marked in use in the free space list must be allocated to //
       // exactly one file
       if (in_use && usage_count != 1) {
-        fprintf(stderr, "block %d was marked in use but usage count is %d\n", i,
+        fprintf(stderr, "block %u was marked in use but usage count is %u\n", i,
                 usage_count);
         return false;
       }
@@ -63,7 +66,6 @@ bool check_one() {
       }
     }
   }
-
   return true;
 }
 bool check_two() {
@@ -165,20 +167,20 @@ bool check_six() {
 
 int8_t do_checks() {
 
-  int error_code = 0;
-
-  if (!check_one())
-    error_code = 1;
+  if (!check_one()){
+    printf("CHECK ONE FAILED\n");
+    return 1;
+  }
   if (!check_two())
-    error_code = 2;
+    return 2;
   if (!check_three())
-    error_code = 3;
+    return 3;
   if (!check_four())
-    error_code = 4;
+    return 4;
   if (!check_five())
-    error_code = 5;
+    return 5;
   if (!check_six())
-    error_code = 6;
+    return 6;
 
-  return error_code;
+  return 0;
 }

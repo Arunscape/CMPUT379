@@ -15,6 +15,19 @@ extern int DISK_FD;
 extern int CWD;
 extern Super_block *SUPER_BLOCK;
 
+void seek_beginning_file(){
+  if ( lseek(DISK_FD, 0, SEEK_SET) < -1 ){
+    perror("error seeking to beginning of file");
+  }
+}
+
+void load_superblock(){
+  if (read(DISK_FD, SUPER_BLOCK, sizeof(Super_block)) < 0) {
+    perror("error reading superblock");
+  }
+  seek_beginning_file();
+}
+
 bool attempt_mount(char *new_disk_name) {
   // check if a virtual disk exists with the given name in the current directory
   // if not,
@@ -27,19 +40,15 @@ bool attempt_mount(char *new_disk_name) {
 
   SUPER_BLOCK = malloc(sizeof(Super_block)); // TODO free
 
-  if (read(DISK_FD, SUPER_BLOCK, sizeof(Super_block)) < 0) {
-    perror("uhhh");
-    fprintf(stderr, "ERROR REEADING SUPER BLOCK\n");
-  }
+  load_superblock();
 
   // check for consistency of filesystem
   int8_t error_code = do_checks();
   if (error_code != 0) {
     fprintf(stderr,
-            "Error: File system in %s is inconsistent (error code: %i)\n",
+            "Error: File system in %s is inconsistent (error code: %d)\n",
             new_disk_name, error_code);
     // use the last filesystem that was mounted
-
     return false;
   }
 
@@ -61,6 +70,7 @@ void write_superblock() {
   if (write(DISK_FD, SUPER_BLOCK, sizeof(Super_block)) < 0) {
     fprintf(stderr, "WHAT");
   }
+  seek_beginning_file();
 }
 
 bool block_in_use(uint8_t i) {
@@ -77,7 +87,7 @@ bool block_is_free(uint8_t i) { return !block_in_use(i); }
 
 int8_t get_first_available_block() {
   for (uint8_t i = 0; i < 128; i += 1) {
-    printf("block %d is free: %d\n", i, block_is_free(i));
+    // printf("block %d is free: %d\n", i, block_is_free(i));
     if (block_is_free(i))
       return i;
   }
