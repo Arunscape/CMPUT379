@@ -36,6 +36,7 @@ void process_input(const char *file) {
 
   free(line);
   fclose(f);
+  close(DISK_FD);
 }
 
 void command_error(const char *input_file_name, size_t line_number) {
