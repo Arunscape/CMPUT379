@@ -2,3 +2,6 @@ fs
 disk0
 test.txt
 vgcore.*
+CMakeLists.txt
+cmake-build-debug/
+untouched
