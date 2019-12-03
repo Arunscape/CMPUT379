@@ -38,34 +38,35 @@ bool check_one() {
         uint8_t start = inode.start_block;
         uint8_t end = inode.start_block + (inode.used_size & 0b01111111);
 
-        //printf(
+        // printf(
         //  "inspecting inode %d, name: %s, size: %u, start: %u,parent: %u\n",
         //  j, inode.name, inode.used_size, inode.start_block,
         //  inode.dir_parent);
-        //printf("start: %u, block: %u, end: %u\n", start, i, end);
+        // printf("start: %u, block: %u, end: %u\n", start, i, end);
         if (start <= i && i < end)
           usage_count += 1;
       }
+    }
 
-      // blocks marked in use in the free space list must be allocated to //
-      // exactly one file
-      if (block_in_use(i) && usage_count != 1) {
-        fprintf(stderr,
-                "check1: block %u was marked in use but usage count is %u\n", i,
-                usage_count);
-        return false;
-      }
+    // blocks marked in use in the free space list must be allocated to //
+    // exactly one file
+    if (block_in_use(i) && usage_count != 1) {
+      fprintf(stderr,
+              "check1: block %u was marked in use but usage count is %u\n", i,
+              usage_count);
+      return false;
+    }
 
-      // blocks that are marked free in the free-space list cannot be allocated
-      // to any file
-      if (block_is_free(i) && usage_count > 0) {
-        fprintf(stderr,
-                "check1: block %d was marked free but usage count is %d\n", i,
-                usage_count);
-        return false;
-      }
+    // blocks that are marked free in the free-space list cannot be allocated
+    // to any file
+    if (block_is_free(i) && usage_count > 0) {
+      fprintf(stderr,
+              "check1: block %d was marked free but usage count is %d\n", i,
+              usage_count);
+      return false;
     }
   }
+
   return true;
 }
 bool check_two() {

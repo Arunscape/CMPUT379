@@ -155,7 +155,7 @@ void update_inode(uint8_t i, char name[5], uint8_t size, uint8_t start_block,
 }
 
 void update_blocks(uint8_t start, uint8_t end, bool set) {
-  fprintf(stderr, "SETTING BLOCKS %u to %u to %d\n", start, end -1, set);
+  fprintf(stderr, "SETTING BLOCKS %u to %u to %d\n", start, end - 1, set);
   for (uint8_t i = start; i < end; i += 1) {
     uint8_t index = i / 8;
     uint8_t bitmask = 1 << (7 - (i % 8));
