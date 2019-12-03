@@ -127,7 +127,7 @@ void fs_delete(char name[5]) {
       break;
     }
     if (inode_is_directory(*inode)) {
-      recursive_delete_inode(inode);
+      recursive_delete_inode(inode, i);
       did_not_delete = false;
       break;
     }

@@ -178,13 +178,29 @@ void update_blocks(uint8_t start, uint8_t end, bool set) {
 }
 
 void delete_inode(Inode *inode) {
-  char name[5];
-  strncpy(name, inode->name, 5);
-  printf("DELETING INODE %s\n", name);
   update_blocks(inode->start_block,
                 inode->start_block + (inode->used_size & 0b01111111), false);
   memset(inode, 0, sizeof(Inode));
   write_superblock();
 }
 
-void recursive_delete_inode(Inode *inode) {}
+void recursive_delete_inode(Inode *inode, uint8_t index) {
+
+  for (int i = 0; i < 126; i += 1) {
+    if (i == index)
+      continue;
+    Inode *other_inode = &SUPER_BLOCK->inode[i];
+    if ((other_inode->dir_parent & 0b01111111) != index)
+      continue;
+
+    if (inode_is_file(*other_inode)) {
+      delete_inode(other_inode);
+      continue;
+    }
+
+    if (inode_is_directory(*other_inode)) {
+      recursive_delete_inode(other_inode, i);
+      continue;
+    }
+  }
+}
