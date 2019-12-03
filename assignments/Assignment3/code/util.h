@@ -31,4 +31,7 @@ void update_inode(int8_t i, char name[5], uint8_t size, uint8_t start_block,
 void update_blocks(uint8_t start, uint8_t end, bool set);
 
 bool no_filesystem_mounted();
+
+void delete_inode(Inode *inode);
+void recursive_delete_inode(Inode *inode);
 #endif

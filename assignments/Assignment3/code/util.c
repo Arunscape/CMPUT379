@@ -130,7 +130,7 @@ bool is_a_duplicate(char *name) {
 void update_inode(uint8_t i, char name[5], uint8_t size, uint8_t start_block,
                   uint8_t dir_parent, bool used, bool is_directory) {
 
-  fprintf(stderr, "INODE SIZE SET TO %u\n", size);
+  // fprintf(stderr, "INODE SIZE SET TO %u\n", size);
 
   Inode *inode = &SUPER_BLOCK->inode[i];
   strncpy(inode->name, name, 5);
@@ -141,7 +141,7 @@ void update_inode(uint8_t i, char name[5], uint8_t size, uint8_t start_block,
   if (used)
     inode->used_size = inode->used_size | 0b10000000;
 
-  fprintf(stderr, "INODE SIZE IS NOW %u\n", inode->used_size);
+  // fprintf(stderr, "INODE SIZE IS NOW %u\n", inode->used_size);
   if (is_directory)
     inode->dir_parent = inode->dir_parent | 0b10000000;
 
@@ -176,3 +176,15 @@ void update_blocks(uint8_t start, uint8_t end, bool set) {
   // for (int i=0; i<16; i+=1)
   //  printf("block %d : %u\n", i, (uint8_t) SUPER_BLOCK->free_block_list[i]);
 }
+
+void delete_inode(Inode *inode) {
+  char name[5];
+  strncpy(name, inode->name, 5);
+  printf("DELETING INODE %s\n", name);
+  update_blocks(inode->start_block,
+                inode->start_block + (inode->used_size & 0b01111111), false);
+  memset(inode, 0, sizeof(Inode));
+  write_superblock();
+}
+
+void recursive_delete_inode(Inode *inode) {}

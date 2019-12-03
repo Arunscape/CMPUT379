@@ -43,7 +43,7 @@ void fs_create(char name[5], int size) {
 
   // you should check the availability of a free inode
   uint8_t first_available_inode = get_first_available_inode();
-  printf("WRITING TO INODE %u\n", first_available_inode);
+  // printf("WRITING TO INODE %u\n", first_available_inode);
   if (first_available_inode < 0) {
 
     printf("create: NO INODES AVAILABLE\n"); // TODO
@@ -110,13 +110,31 @@ void fs_create(char name[5], int size) {
   }
 }
 void fs_delete(char name[5]) {
-  for (size_t i = 0; i < 126; i += 1) {
-    if (strcmp(name, SUPER_BLOCK->inode[i].name) == 0) {
-      // delete it
-      return;
+
+  bool did_not_delete = true;
+  for (uint8_t i = 0; i < 126; i += 1) {
+    Inode *inode = &SUPER_BLOCK->inode[i];
+
+    if (inode_parent(*inode) != CWD)
+      continue;
+
+    if (strncmp(inode->name, name, 5) != 0)
+      continue;
+
+    if (inode_is_file(*inode)) {
+      delete_inode(inode);
+      did_not_delete = false;
+      break;
+    }
+    if (inode_is_directory(*inode)) {
+      recursive_delete_inode(inode);
+      did_not_delete = false;
+      break;
     }
   }
-  fprintf(stderr, "File or directory %s does not exist", name);
+
+  if (did_not_delete)
+    fprintf(stderr, "File or directory %s does not exist\n", name);
 }
 void fs_read(char name[5], int block_num) {}
 void fs_write(char name[5], int block_num) {}

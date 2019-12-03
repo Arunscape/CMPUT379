@@ -117,6 +117,7 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     if (strlen(name) > 5) {
       command_error(input_file_name, line_number);
       printf("file name too long\n");
+      return;
     }
 
     // too many arguments
@@ -133,7 +134,25 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
 
     fs_create(name, size);
   } else if (strcmp(first_token, "D") == 0) {
-    char name[5];
+    char *name;
+    if ((name = strtok_r(NULL, " ", &strtok_state)) == NULL) {
+      command_error(input_file_name, line_number);
+      printf("file name not provided for delete\n");
+      return;
+    }
+    // file name too long
+    if (strlen(name) > 5) {
+      command_error(input_file_name, line_number);
+      printf("file name too long\n");
+      return;
+    }
+
+    // too many arguments
+    if (strtok_r(NULL, " ", &strtok_state) != NULL) {
+      command_error(input_file_name, line_number);
+      printf("too many arguments for delete file\n");
+      return;
+    }
     fs_delete(name);
   } else if (strcmp(first_token, "R") == 0) {
     char name[5];
