@@ -153,10 +153,74 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
       printf("too many arguments for delete file\n");
       return;
     }
+
+    if (DISK_FD == -1) {
+      error_no_filesystem_mounted();
+      return;
+    }
     fs_delete(name);
   } else if (strcmp(first_token, "R") == 0) {
-    char name[5];
-    int block_num = 0;
+
+    // file name not provided
+    char *name;
+    if ((name = strtok_r(NULL, " ", &strtok_state)) == NULL) {
+      command_error(input_file_name, line_number);
+      printf("file name not provided for read\n");
+      return;
+    }
+
+    // file size not provided
+    char *block_num_str;
+    if ((block_num_str = strtok_r(NULL, " ", &strtok_state)) == NULL) {
+      command_error(input_file_name, line_number);
+      printf("block_num not provided for read\n");
+      return;
+    }
+
+    char *endptr = NULL;
+    errno = 0;
+    long str_block_num = strtol(block_num_str, &endptr, 10);
+    int block_num = -1;
+    if (0 <= str_block_num && str_block_num <= INT_MAX) {
+      block_num = str_block_num;
+    } else {
+      fprintf(stderr, "block num exceeds size of int lol");
+    }
+
+    // unable to parse integer
+    if (errno != 0 || block_num < 0) {
+      command_error(input_file_name, line_number);
+      printf("cannot parse integer in create\n");
+      return;
+    }
+
+    // errno == 0 at this point
+    // leftover characters after strtol
+    if (*endptr != '\0') {
+      command_error(input_file_name, line_number);
+      printf("there's extra stuff\n");
+      return;
+    }
+
+    // file name too long
+    if (strlen(name) > 5) {
+      command_error(input_file_name, line_number);
+      printf("file name too long\n");
+      return;
+    }
+
+    // too many arguments
+    if (strtok_r(NULL, " ", &strtok_state) != NULL) {
+      command_error(input_file_name, line_number);
+      printf("too many arguments for read file\n");
+      return;
+    }
+
+    if (DISK_FD == -1) {
+      error_no_filesystem_mounted();
+      return;
+    }
+
     fs_read(name, block_num);
   } else if (strcmp(first_token, "W") == 0) {
     char name[5];

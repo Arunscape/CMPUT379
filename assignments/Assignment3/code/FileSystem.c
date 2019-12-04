@@ -18,6 +18,7 @@ Super_block *SUPER_BLOCK = NULL;
 
 int DISK_FD = -1;
 int8_t CWD = -1;
+uint8_t BUFFER[1024] = {0};
 
 void fs_mount(char *new_disk_name) {
   if (attempt_mount(new_disk_name)) {
@@ -136,7 +137,62 @@ void fs_delete(char name[5]) {
   if (did_not_delete)
     fprintf(stderr, "File or directory %s does not exist\n", name);
 }
-void fs_read(char name[5], int block_num) {}
+void fs_read(char name[5], int block_num) {
+  printf("\n\nREADING FILE WITH NAME %s, and block num %d\n\n", name, block_num);
+
+  bool did_not_read_into_buffer = true;
+  bool invalid_block_num = false;
+  // find the file with the name in the current directory
+  for (uint8_t i=0; i< 126; i+=1){
+    Inode inode = SUPER_BLOCK->inode[i];
+
+    if ( (inode.dir_parent & 0b01111111) != CWD)
+      continue;
+    
+    if (inode_is_directory(inode))
+      continue;
+
+    if ( strncmp(inode.name, name, 5) != 0 )
+      continue;
+
+
+    // we're in the same directory, and the name matches, and it's a file
+    if (block_num < 0 || block_num > ((inode.used_size & 0b01111111) -1)){
+      invalid_block_num = true;
+      break;
+    }
+
+    // also the block num is valid now
+
+    if (lseek(DISK_FD, 1024 * (inode.start_block + block_num), SEEK_SET) < -1){
+      perror("error seeking to the block");
+      return;
+    }
+
+    if (read(DISK_FD, BUFFER, 1024) < 0){
+      perror("error reading block to buffer");
+      return;
+    }
+    
+    seek_beginning_file();
+    did_not_read_into_buffer = false;
+  }
+
+
+    if (did_not_read_into_buffer){
+      fprintf(stderr, "Error: file %s does not exist", name);
+      return;
+    }
+
+    if (invalid_block_num){
+      fprintf(stderr, "Error, %s does not have block %u\n", name, block_num);
+      return;
+    }
+
+
+
+
+}
 void fs_write(char name[5], int block_num) {}
 void fs_buff(uint8_t buff[1024]) {}
 void fs_ls(void) {}

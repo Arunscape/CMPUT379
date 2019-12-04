@@ -34,4 +34,6 @@ bool no_filesystem_mounted();
 
 void delete_inode(Inode *inode);
 void recursive_delete_inode(Inode *inode, uint8_t index);
+
+void seek_beginning_file();
 #endif
