@@ -291,7 +291,7 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
       printf("data not provided for buffer\n");
       return;
     }
-    
+
     // file name too long
     if (strlen(buff_str) > 1024) {
       command_error(input_file_name, line_number);
@@ -304,7 +304,7 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
       return;
     }
 
-    strncpy((char*) buff, buff_str, 1024);
+    strncpy((char *)buff, buff_str, 1024);
     fs_buff(buff);
   } else if (strcmp(first_token, "L") == 0) {
     // too many arguments

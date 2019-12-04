@@ -237,25 +237,25 @@ void fs_write(char name[5], int block_num) {
   }
 }
 void fs_buff(uint8_t buff[1024]) {
-  for (size_t i=0; i<1024; i+=1)
+  for (size_t i = 0; i < 1024; i += 1)
     BUFFER[i] = buff[i];
 }
 void fs_ls(void) {
-  for (uint8_t i=0; i<126; i+=1){
+  for (uint8_t i = 0; i < 126; i += 1) {
     Inode inode = SUPER_BLOCK->inode[i];
 
     if (inode_is_free(inode))
       continue;
 
-    if (inode_is_file(inode)){
+    if (inode_is_file(inode)) {
       print_file(inode.name, inode.used_size & 0b01111111);
       continue;
     }
 
-    if (inode_is_directory(inode)){
+    if (inode_is_directory(inode)) {
       calculate_and_print_directory(inode);
       continue;
-    } 
+    }
   }
 }
 void fs_resize(char name[5], int new_size) {}
