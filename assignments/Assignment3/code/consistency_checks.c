@@ -36,7 +36,7 @@ bool check_one() {
 
       if (inode_is_file(inode) && inode_in_use(inode)) {
         uint8_t start = inode.start_block;
-        uint8_t end = inode.start_block + (inode.used_size & 0b01111111);
+        uint8_t end = inode.start_block + inode_used_size(inode);
 
         // printf(
         //  "inspecting inode %d, name: %s, size: %u, start: %u,parent: %u\n",
@@ -82,7 +82,7 @@ bool check_two() {
           continue;
         Inode other_inode = SUPER_BLOCK->inode[i];
         // if other inode is in the original inode's directory
-        if ((other_inode.dir_parent & 0b01111111) == i) {
+        if (inode_parent(other_inode) == i) {
           Inode other_inode = SUPER_BLOCK->inode[i];
 
           if (strncmp(inode.name, other_inode.name, 5) == 0) {
@@ -146,7 +146,7 @@ bool check_five() {
   for (uint8_t i = 0; i < 126; i += 1) {
     Inode inode = SUPER_BLOCK->inode[i];
     if (inode_is_directory(inode) && inode_in_use(inode))
-      if ((inode.used_size & 0b01111111) || inode.start_block)
+      if (inode_used_size(inode) || inode.start_block)
         return false;
   }
   return true;
@@ -161,11 +161,10 @@ bool check_six() {
     Inode inode = SUPER_BLOCK->inode[i];
     if (!inode_in_use(inode))
       continue;
-    uint8_t parent_index = inode.dir_parent & 0b01111111;
-    if (parent_index == 126)
+    if (inode_parent(inode) == 126)
       return false;
 
-    if (0 <= parent_index && parent_index <= 125)
+    if (0 <= inode_parent(inode) && inode_parent(inode) <= 125)
       if (!inode_in_use(inode) || !inode_is_directory(inode))
         return false;
   }

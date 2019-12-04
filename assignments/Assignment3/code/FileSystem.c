@@ -119,7 +119,7 @@ void fs_delete(char name[5]) {
     if (inode_parent(*inode) != CWD)
       continue;
 
-    if (strncmp(inode->name, name, 5) != 0)
+    if (inode_name_not_equals(*inode, name))
       continue;
 
     if (inode_is_file(*inode)) {
@@ -147,7 +147,7 @@ void fs_read(char name[5], int block_num) {
   for (uint8_t i = 0; i < 126; i += 1) {
     Inode inode = SUPER_BLOCK->inode[i];
 
-    if ((inode.dir_parent & 0b01111111) != CWD)
+    if (inode_not_in_cwd(inode))
       continue;
 
     if (inode_is_directory(inode))
@@ -157,7 +157,7 @@ void fs_read(char name[5], int block_num) {
       continue;
 
     // we're in the same directory, and the name matches, and it's a file
-    if (block_num < 0 || block_num > ((inode.used_size & 0b01111111) - 1)) {
+    if (block_num < 0 || block_num > (inode_used_size(inode) - 1)) {
       invalid_block_num = true;
       break;
     }
@@ -195,17 +195,17 @@ void fs_write(char name[5], int block_num) {
   for (uint8_t i = 0; i < 126; i += 1) {
     Inode inode = SUPER_BLOCK->inode[i];
 
-    if ((inode.dir_parent & 0b01111111) != CWD)
+    if (inode_not_in_cwd(inode))
       continue;
 
     if (inode_is_directory(inode))
       continue;
 
-    if (strncmp(inode.name, name, 5) != 0)
+    if (inode_name_not_equals(inode, name))
       continue;
 
     // we're in the same directory, and the name matches, and it's a file
-    if (block_num < 0 || block_num > ((inode.used_size & 0b01111111) - 1)) {
+    if (block_num < 0 || block_num > (inode_used_size(inode) - 1)) {
       invalid_block_num = true;
       break;
     }
@@ -247,11 +247,11 @@ void fs_ls(void) {
     if (inode_is_free(inode))
       continue;
 
-    if ((inode.dir_parent & 0b01111111) != CWD)
+    if (inode_not_in_cwd(inode))
       continue;
 
     if (inode_is_file(inode)) {
-      print_file(inode.name, inode.used_size & 0b01111111);
+      print_file(inode.name, inode_used_size(inode));
       continue;
     }
 
@@ -261,6 +261,12 @@ void fs_ls(void) {
     }
   }
 }
-void fs_resize(char name[5], int new_size) {}
-void fs_defrag(void) {}
+void fs_resize(char name[5], int new_size) {
+
+
+}
+void fs_defrag(void) {
+  // TA said the strategy is to copy the data blocks to memory, then write
+  // to the disk in the correct order
+}
 void fs_cd(char name[5]) {}
