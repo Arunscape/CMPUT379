@@ -261,10 +261,7 @@ void fs_ls(void) {
     }
   }
 }
-void fs_resize(char name[5], int new_size) {
-
-
-}
+void fs_resize(char name[5], int new_size) {}
 void fs_defrag(void) {
   // TA said the strategy is to copy the data blocks to memory, then write
   // to the disk in the correct order

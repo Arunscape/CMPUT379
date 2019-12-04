@@ -42,7 +42,6 @@ void print_file(char name[5], uint8_t size);
 
 void calculate_and_print_directory(Inode inode, uint8_t index);
 
-
 bool inode_not_in_cwd(Inode inode);
 bool inode_in_cwd(Inode inode);
 

@@ -70,14 +70,11 @@ bool attempt_mount(char *new_disk_name) {
 }
 
 uint8_t inode_parent(Inode inode) { return inode.dir_parent & 0b01111111; }
-uint8_t inode_used_size(Inode inode){ return inode.used_size & 0b01111111;}
+uint8_t inode_used_size(Inode inode) { return inode.used_size & 0b01111111; }
 
-bool inode_in_cwd(Inode inode){
-  return inode_parent(inode) == CWD;
-}
+bool inode_in_cwd(Inode inode) { return inode_parent(inode) == CWD; }
 
-bool inode_not_in_cwd(Inode inode){ return !inode_in_cwd(inode); }
-
+bool inode_not_in_cwd(Inode inode) { return !inode_in_cwd(inode); }
 
 bool inode_in_use(Inode inode) { return (inode.used_size >> 7) & 1; }
 bool inode_is_free(Inode inode) { return !inode_in_use(inode); }
@@ -244,7 +241,6 @@ void calculate_and_print_directory(Inode inode, uint8_t index) {
     if (inode_is_free(other_inode))
       continue;
 
-    
     if (inode_parent(other_inode) == index) {
       count += 1;
       continue;
@@ -254,25 +250,25 @@ void calculate_and_print_directory(Inode inode, uint8_t index) {
   print_directory(inode.name, count);
 }
 
-bool inode_name_equals(Inode inode, char name[5]){
+bool inode_name_equals(Inode inode, char name[5]) {
   return strncmp(inode.name, name, 5) == 0;
 }
 
-bool inode_name_not_equals(Inode inode, char name[5]){
+bool inode_name_not_equals(Inode inode, char name[5]) {
   return !inode_name_equals(inode, name);
 }
 
-Inode* get_inode_with_name_in_cwd(char name[5]){
-  for (uint8_t i=0; i< 126; i+=1){
-    Inode* inode = &SUPER_BLOCK->inode[i];
+Inode *get_inode_with_name_in_cwd(char name[5]) {
+  for (uint8_t i = 0; i < 126; i += 1) {
+    Inode *inode = &SUPER_BLOCK->inode[i];
     if (inode_is_free(*inode))
       continue;
 
     if (inode_parent(*inode) != CWD)
       continue;
 
-    if(inode_name_equals(*inode, name))
+    if (inode_name_equals(*inode, name))
       return inode;
   }
-      return NULL;
+  return NULL;
 }
