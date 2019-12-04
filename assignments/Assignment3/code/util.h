@@ -49,4 +49,6 @@ bool inode_name_equals(Inode inode, char name[5]);
 
 bool inode_name_not_equals(Inode inode, char name[5]);
 uint8_t inode_used_size(Inode inode);
+
+Inode *get_inode_with_name_in_cwd(char name[5]);
 #endif

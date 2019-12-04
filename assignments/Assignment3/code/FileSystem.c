@@ -261,7 +261,28 @@ void fs_ls(void) {
     }
   }
 }
-void fs_resize(char name[5], int new_size) {}
+void fs_resize(char name[5], int new_size) {
+  Inode* inode = get_inode_with_name_in_cwd(name);
+
+  if (inode == NULL || inode_is_directory(*inode)){
+    fprintf(stderr, "Error: File %s does not exist\n");
+    return;
+  }
+
+
+  if (new_size > inode_used_size(*inode)){
+    // need to allocate more blocks to this file
+
+    return;
+  }
+
+  if (new_size < inode_used_size(*inode)){
+
+    return;
+  }
+
+  // new size equals old size
+}
 void fs_defrag(void) {
   // TA said the strategy is to copy the data blocks to memory, then write
   // to the disk in the correct order
