@@ -69,7 +69,8 @@ void fs_create(char name[5], int size) {
 
   if (size > 0) { // file
 
-    uint8_t start_block = get_start_block_for_allocation(size, first_available_block);
+    uint8_t start_block =
+        get_start_block_for_allocation(size, first_available_block);
 
     if (start_block > 127 || (start_block + size - 1 > 127)) {
       fprintf(stderr, "Error: Cannot allocate %d, on <TODO GET DISK NAME>",
@@ -248,28 +249,46 @@ void fs_ls(void) {
 void fs_resize(char name[5], int new_size) {
   uint8_t inode_index = get_inode_with_name_in_cwd(name);
 
-  Inode* inode  = &SUPER_BLOCK->inode[inode_index];
+  Inode *inode = &SUPER_BLOCK->inode[inode_index];
 
-  if (inode == NULL || inode_is_directory(*inode)){
+  if (inode == NULL || inode_is_directory(*inode)) {
     fprintf(stderr, "Error: File %s does not exist\n", name);
     return;
   }
 
   bool error = false;
-  if (new_size > inode_used_size(*inode)){
+  if (new_size > inode_used_size(*inode)) {
     // need to allocate more blocks to this file
+    if (can_allocate_start_block(inode->start_block, new_size)) {
+      update_blocks(inode->start_block, inode->start_block + new_size, false);
+      update_inode(inode_index, inode->name, new_size, inode->start_block,
+                   inode->dir_parent, true, false);
+      return;
+    }
 
-    //update_blocks(start_block, start_block + new_size, false);
-    //update_inode(inode_index, inode->name, new_size, start_block, inode->dir_parent, true, false);
+    uint8_t start_block = get_start_block_for_allocation(new_size, 0);
+    if (start_block > 127){
+      error = true;
+    } else {
+      update_blocks(start_block, start_block + new_size, false);
+      update_inode(inode_index, inode->name, new_size, start_block,
+                   inode->dir_parent, true, false);
+      return;
+    }
   }
 
-  if (error){
-    fprintf(stderr, "Error: File %s cannot expand to size %d\n", inode->name, new_size);
+  if (error) {
+    fprintf(stderr, "Error: File %s cannot expand to size %d\n", inode->name,
+            new_size);
     return;
   }
 
-  if (new_size < inode_used_size(*inode)){
-
+  if (new_size < inode_used_size(*inode)) {
+    uint8_t zero_start = inode->start_block + new_size;
+    uint8_t zero_end = inode->start_block + inode_used_size(*inode);
+    update_blocks(zero_start, zero_end, false);
+    update_inode(inode_index, inode->name, new_size, inode->start_block,
+                 inode->dir_parent, true, false);
     return;
   }
 
