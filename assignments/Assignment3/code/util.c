@@ -223,6 +223,8 @@ void recursive_delete_inode(Inode *inode, uint8_t index) {
       continue;
     }
   }
+
+  delete_inode(inode);
 }
 
 void print_file(char name[5], uint8_t size) {
@@ -271,4 +273,25 @@ Inode *get_inode_with_name_in_cwd(char name[5]) {
       return inode;
   }
   return NULL;
+}
+
+
+uint8_t get_start_block_for_allocation(uint8_t size, uint8_t search_start){
+  
+  for (uint8_t candidate = search_start; candidate < 128;
+         candidate += 1) {
+      bool candidate_works = true;
+      for (uint8_t i = candidate; i < candidate + size; i += 1) {
+        if (block_in_use(i)) {
+          candidate_works = false;
+          fprintf(stderr, "Block %d in use\n", i); // TODO
+          break;
+        }
+      }
+
+      if (candidate_works) {
+        return candidate;
+      }
+    }
+  return 255;
 }

@@ -69,23 +69,7 @@ void fs_create(char name[5], int size) {
 
   if (size > 0) { // file
 
-    uint8_t start_block = 255;
-    for (uint8_t candidate = first_available_block; candidate < 128;
-         candidate += 1) {
-      bool candidate_works = true;
-      for (uint8_t i = candidate; i < candidate + size; i += 1) {
-        if (block_in_use(i)) {
-          candidate_works = false;
-          fprintf(stderr, "Block %d in use\n", i); // TODO
-          break;
-        }
-      }
-
-      if (candidate_works) {
-        start_block = candidate;
-        break;
-      }
-    }
+    uint8_t start_block = get_start_block_for_allocation(size, first_available_block);
 
     if (start_block > 127 || (start_block + size - 1 > 127)) {
       fprintf(stderr, "Error: Cannot allocate %d, on <TODO GET DISK NAME>",
@@ -265,7 +249,7 @@ void fs_resize(char name[5], int new_size) {
   Inode* inode = get_inode_with_name_in_cwd(name);
 
   if (inode == NULL || inode_is_directory(*inode)){
-    fprintf(stderr, "Error: File %s does not exist\n");
+    fprintf(stderr, "Error: File %s does not exist\n", name);
     return;
   }
 
