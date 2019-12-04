@@ -178,21 +178,35 @@ void update_blocks(uint8_t start, uint8_t end, bool set) {
 }
 
 void delete_inode(Inode *inode) {
-  update_blocks(inode->start_block,
-                inode->start_block + (inode->used_size & 0b01111111), false);
+
+  // if it's not a directory, update the blocks
+  if (inode_is_file(*inode)) {
+    char name[5];
+    strncpy(name, inode->name, 5);
+    printf("TRYING TO DELETE INODE %s\n", name);
+    update_blocks(inode->start_block,
+                  inode->start_block + (inode->used_size & 0b01111111), false);
+  }
   memset(inode, 0, sizeof(Inode));
   write_superblock();
 }
 
 void recursive_delete_inode(Inode *inode, uint8_t index) {
 
+  char name[5];
+  strncpy(name, inode->name, 5);
+  printf("DELETING DIRECTORY INODE %s with index: %u\n", name, index);
   for (int i = 0; i < 126; i += 1) {
     if (i == index)
       continue;
     Inode *other_inode = &SUPER_BLOCK->inode[i];
+    if (inode_is_free(*other_inode))
+      continue;
+
     if ((other_inode->dir_parent & 0b01111111) != index)
       continue;
 
+    // for each inode whose parent is the index
     if (inode_is_file(*other_inode)) {
       delete_inode(other_inode);
       continue;
@@ -200,6 +214,7 @@ void recursive_delete_inode(Inode *inode, uint8_t index) {
 
     if (inode_is_directory(*other_inode)) {
       recursive_delete_inode(other_inode, i);
+      delete_inode(other_inode);
       continue;
     }
   }

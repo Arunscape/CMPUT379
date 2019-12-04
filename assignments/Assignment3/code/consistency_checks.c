@@ -146,7 +146,7 @@ bool check_five() {
   for (uint8_t i = 0; i < 126; i += 1) {
     Inode inode = SUPER_BLOCK->inode[i];
     if (inode_is_directory(inode) && inode_in_use(inode))
-      if (inode.used_size || inode.start_block)
+      if ((inode.used_size & 0b01111111) || inode.start_block)
         return false;
   }
   return true;
