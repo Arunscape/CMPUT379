@@ -260,7 +260,7 @@ bool inode_name_not_equals(Inode inode, char name[5]) {
   return !inode_name_equals(inode, name);
 }
 
-Inode *get_inode_with_name_in_cwd(char name[5]) {
+uint8_t get_inode_with_name_in_cwd(char name[5]) {
   for (uint8_t i = 0; i < 126; i += 1) {
     Inode *inode = &SUPER_BLOCK->inode[i];
     if (inode_is_free(*inode))
@@ -270,28 +270,32 @@ Inode *get_inode_with_name_in_cwd(char name[5]) {
       continue;
 
     if (inode_name_equals(*inode, name))
-      return inode;
+      return i;
   }
-  return NULL;
+  return 255;
 }
 
-
+bool can_allocate_start_block(uint8_t start, uint8_t size);
 uint8_t get_start_block_for_allocation(uint8_t size, uint8_t search_start){
   
   for (uint8_t candidate = search_start; candidate < 128;
          candidate += 1) {
-      bool candidate_works = true;
-      for (uint8_t i = candidate; i < candidate + size; i += 1) {
-        if (block_in_use(i)) {
-          candidate_works = false;
-          fprintf(stderr, "Block %d in use\n", i); // TODO
-          break;
-        }
-      }
+      bool candidate_works = can_allocate_start_block(candidate, size);
 
       if (candidate_works) {
         return candidate;
       }
     }
   return 255;
+}
+
+bool can_allocate_start_block(uint8_t start, uint8_t size){
+
+      for (uint8_t i = start; i < start + size; i += 1) {
+        if (block_in_use(i)) {
+          return false;
+          fprintf(stderr, "Block %d in use\n", i); // TODO
+        }
+      }
+      return true;
 }

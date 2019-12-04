@@ -246,17 +246,25 @@ void fs_ls(void) {
   }
 }
 void fs_resize(char name[5], int new_size) {
-  Inode* inode = get_inode_with_name_in_cwd(name);
+  uint8_t inode_index = get_inode_with_name_in_cwd(name);
+
+  Inode* inode  = &SUPER_BLOCK->inode[inode_index];
 
   if (inode == NULL || inode_is_directory(*inode)){
     fprintf(stderr, "Error: File %s does not exist\n", name);
     return;
   }
 
-
+  bool error = false;
   if (new_size > inode_used_size(*inode)){
     // need to allocate more blocks to this file
 
+    //update_blocks(start_block, start_block + new_size, false);
+    //update_inode(inode_index, inode->name, new_size, start_block, inode->dir_parent, true, false);
+  }
+
+  if (error){
+    fprintf(stderr, "Error: File %s cannot expand to size %d\n", inode->name, new_size);
     return;
   }
 
