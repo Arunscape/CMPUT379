@@ -320,6 +320,7 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     }
     fs_ls();
   } else if (strcmp(first_token, "E") == 0) {
+    // resize
     char name[5];
     int new_size = 0;
     fs_resize(name, new_size);

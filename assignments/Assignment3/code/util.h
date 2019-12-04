@@ -40,5 +40,5 @@ void print_file(char name[5], uint8_t size);
 
 // void print_directory(char name[5], uint8_t num_children);
 
-void calculate_and_print_directory(Inode inode);
+void calculate_and_print_directory(Inode inode, uint8_t index);
 #endif

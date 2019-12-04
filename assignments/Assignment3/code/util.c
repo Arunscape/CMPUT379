@@ -228,15 +228,15 @@ void print_directory(char name[5], uint8_t num_children) {
   printf("%-5s %3d\n", name, num_children + 2); // add 2 for . and ..
 }
 
-void calculate_and_print_directory(Inode inode) {
+void calculate_and_print_directory(Inode inode, uint8_t index) {
   uint8_t count = 0;
   for (uint8_t i = 0; i < 126; i += 1) {
     Inode other_inode = SUPER_BLOCK->inode[i];
 
-    if (inode_is_free(inode))
+    if (inode_is_free(other_inode))
       continue;
 
-    if ((inode.dir_parent & 0b01111111) ==
+    if (index ==
         (other_inode.dir_parent & 0b01111111)) {
       count += 1;
       continue;

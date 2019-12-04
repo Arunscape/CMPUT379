@@ -247,13 +247,16 @@ void fs_ls(void) {
     if (inode_is_free(inode))
       continue;
 
+    if ((inode.dir_parent & 0b01111111) != CWD)
+      continue;
+
     if (inode_is_file(inode)) {
       print_file(inode.name, inode.used_size & 0b01111111);
       continue;
     }
 
     if (inode_is_directory(inode)) {
-      calculate_and_print_directory(inode);
+      calculate_and_print_directory(inode, i);
       continue;
     }
   }
