@@ -292,22 +292,32 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
       return;
     }
     
-    // no error checking, what if the buffer has some 0 bits in it?
     // file name too long
-    //if (strlen(buff_str) > 1024) {
-    //  command_error(input_file_name, line_number);
-    //  printf("too much data provided for buffer\n");
-    //  return;
-    //}
+    if (strlen(buff_str) > 1024) {
+      command_error(input_file_name, line_number);
+      printf("too much data provided for buffer\n");
+      return;
+    }
 
     if (DISK_FD == -1) {
       error_no_filesystem_mounted();
       return;
     }
 
-    strcpy((char*) buff, buff_str);
+    strncpy((char*) buff, buff_str, 1024);
     fs_buff(buff);
   } else if (strcmp(first_token, "L") == 0) {
+    // too many arguments
+    if (strtok_r(NULL, " ", &strtok_state) != NULL) {
+      command_error(input_file_name, line_number);
+      printf("too many arguments for ls\n");
+      return;
+    }
+
+    if (DISK_FD == -1) {
+      error_no_filesystem_mounted();
+      return;
+    }
     fs_ls();
   } else if (strcmp(first_token, "E") == 0) {
     char name[5];
