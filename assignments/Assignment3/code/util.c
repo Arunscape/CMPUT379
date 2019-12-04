@@ -236,8 +236,7 @@ void calculate_and_print_directory(Inode inode, uint8_t index) {
     if (inode_is_free(other_inode))
       continue;
 
-    if (index ==
-        (other_inode.dir_parent & 0b01111111)) {
+    if (index == (other_inode.dir_parent & 0b01111111)) {
       count += 1;
       continue;
     }
