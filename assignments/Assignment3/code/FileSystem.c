@@ -236,7 +236,10 @@ void fs_write(char name[5], int block_num) {
     return;
   }
 }
-void fs_buff(uint8_t buff[1024]) {}
+void fs_buff(uint8_t buff[1024]) {
+  for (size_t i=0; i<1024; i+=1)
+    BUFFER[i] = buff[i];
+}
 void fs_ls(void) {}
 void fs_resize(char name[5], int new_size) {}
 void fs_defrag(void) {}

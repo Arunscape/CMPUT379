@@ -284,7 +284,28 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     }
     fs_write(name, block_num);
   } else if (strcmp(first_token, "B") == 0) {
-    uint8_t buff[1024];
+    uint8_t buff[1024] = {0};
+    char *buff_str;
+    if ((buff_str = strtok_r(NULL, " ", &strtok_state)) == NULL) {
+      command_error(input_file_name, line_number);
+      printf("data not provided for buffer\n");
+      return;
+    }
+    
+    // no error checking, what if the buffer has some 0 bits in it?
+    // file name too long
+    //if (strlen(buff_str) > 1024) {
+    //  command_error(input_file_name, line_number);
+    //  printf("too much data provided for buffer\n");
+    //  return;
+    //}
+
+    if (DISK_FD == -1) {
+      error_no_filesystem_mounted();
+      return;
+    }
+
+    strcpy((char*) buff, buff_str);
     fs_buff(buff);
   } else if (strcmp(first_token, "L") == 0) {
     fs_ls();
