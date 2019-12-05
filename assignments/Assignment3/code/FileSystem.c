@@ -333,7 +333,7 @@ void fs_cd(char name[5]) {
     if (inode_parent(inode) != CWD)
       continue;
 
-    if (inode_name_not_equals(name))
+    if (inode_name_not_equals(inode, name))
       continue;
 
     CWD = i;
