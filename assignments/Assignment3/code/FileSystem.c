@@ -95,6 +95,7 @@ void fs_create(char name[5], int size) {
     return;
   }
 }
+
 void fs_delete(char name[5]) {
 
   bool did_not_delete = true;
@@ -122,6 +123,7 @@ void fs_delete(char name[5]) {
   if (did_not_delete)
     fprintf(stderr, "File or directory %s does not exist\n", name);
 }
+
 void fs_read(char name[5], int block_num) {
   printf("\n\nREADING FILE WITH NAME %s, and block num %d\n\n", name,
          block_num);
@@ -164,6 +166,7 @@ void fs_read(char name[5], int block_num) {
     return;
   }
 }
+
 void fs_write(char name[5], int block_num) {
   bool did_not_write_buffer = true;
   bool invalid_block_num = false;
@@ -202,11 +205,20 @@ void fs_write(char name[5], int block_num) {
     return;
   }
 }
+
 void fs_buff(uint8_t buff[1024]) {
   for (size_t i = 0; i < 1024; i += 1)
     BUFFER[i] = buff[i];
 }
+
 void fs_ls(void) {
+
+  uint8_t cwd_count = num_children(CWD);
+  print_directory(".", cwd_count);
+  
+  uint8_t parent_count = num_children(inode_parent(SUPER_BLOCK->inode[CWD]));
+  print_directory("..", parent_count);
+
   for (uint8_t i = 0; i < 126; i += 1) {
     Inode inode = SUPER_BLOCK->inode[i];
 
@@ -222,11 +234,13 @@ void fs_ls(void) {
     }
 
     if (inode_is_directory(inode)) {
-      calculate_and_print_directory(inode, i);
+      uint8_t count = num_children(i);
+      print_directory(inode.name, count);
       continue;
     }
   }
 }
+
 void fs_resize(char name[5], int new_size) {
   uint8_t inode_index = get_inode_with_name_in_cwd(name);
 
@@ -281,6 +295,7 @@ void fs_resize(char name[5], int new_size) {
 
   // new size equals old size
 }
+
 void fs_defrag(void) {
 
   Inode *inodes[126] = {0};
@@ -310,6 +325,7 @@ void fs_defrag(void) {
   }
   write_superblock();
 }
+
 void fs_cd(char name[5]) {
 
   if (strcmp(name, ".") == 0)

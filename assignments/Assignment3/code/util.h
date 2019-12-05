@@ -38,9 +38,10 @@ void recursive_delete_inode(Inode *inode, uint8_t index);
 void seek_beginning_file();
 void print_file(char name[5], uint8_t size);
 
-// void print_directory(char name[5], uint8_t num_children);
+void print_directory(char name[5], uint8_t num_children);
 
-void calculate_and_print_directory(Inode inode, uint8_t index);
+uint8_t num_children(uint8_t index);
+
 
 bool inode_not_in_cwd(Inode inode);
 bool inode_in_cwd(Inode inode);

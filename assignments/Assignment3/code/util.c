@@ -240,21 +240,41 @@ void print_directory(char name[5], uint8_t num_children) {
   printf("%-5s %3d\n", name, num_children + 2); // add 2 for . and ..
 }
 
-void calculate_and_print_directory(Inode inode, uint8_t index) {
+uint8_t num_children(uint8_t index) {
   uint8_t count = 0;
   for (uint8_t i = 0; i < 126; i += 1) {
-    Inode other_inode = SUPER_BLOCK->inode[i];
+    Inode inode = SUPER_BLOCK->inode[i];
 
-    if (inode_is_free(other_inode))
+    if (inode_is_free(inode))
       continue;
 
-    if (inode_parent(other_inode) == index) {
+    if (inode_parent(inode) == index) {
       count += 1;
       continue;
     }
   }
+  return count;
+}
 
-  print_directory(inode.name, count);
+void calculate_and_print_directory(Inode inode, uint8_t index) {
+
+  uint8_t cwd_count = num_children(CWD);
+  uint8_t parent_count = num_children(inode_parent(inode));
+  print_directory(".", cwd_count);
+  print_directory("..", parent_count);
+
+  for (uint8_t i=0; i < 126; i+=1){
+    Inode inode = SUPER_BLOCK->inode[i];
+
+    if (inode_is_free(inode))
+      continue;
+
+    if (inode_parent(inode) != CWD)
+      continue;
+
+    uint8_t count = num_children(i);
+    print_directory(inode.name, count);
+  }
 }
 
 bool inode_name_equals(Inode inode, char name[5]) {
