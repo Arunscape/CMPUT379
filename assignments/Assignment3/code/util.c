@@ -315,7 +315,7 @@ void read_into_buffer(int block, uint8_t buffer[1024]) {
 }
 
 void write_buffer(int block, uint8_t buffer[1024]) {
-  printf("WRITING TO BLOCK %d\n", block);
+  // printf("WRITING TO BLOCK %d\n", block);
 
   if (lseek(DISK_FD, block * 1024, SEEK_SET) < -1) {
     perror("error seeking to the block");

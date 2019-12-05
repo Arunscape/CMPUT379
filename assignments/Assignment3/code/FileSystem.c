@@ -190,8 +190,6 @@ void fs_write(char name[5], int block_num) {
     }
 
     // also the block num is valid now
-    printf("INODE START BLOCK: %d\n", inode.start_block);
-    printf("INODE NAME: %s\n", inode.name);
     write_buffer(inode.start_block + block_num, BUFFER);
     did_not_write_buffer = false;
   }
