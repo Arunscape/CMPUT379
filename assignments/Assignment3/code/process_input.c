@@ -321,9 +321,66 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     fs_ls();
   } else if (strcmp(first_token, "E") == 0) {
     // resize
-    char name[5];
-    int new_size = 0;
-    fs_resize(name, new_size);
+    // file name not provided
+    char *name;
+    if ((name = strtok_r(NULL, " ", &strtok_state)) == NULL) {
+      command_error(input_file_name, line_number);
+      printf("file name not provided for resize\n");
+      return;
+    }
+
+    // file size not provided
+    char *size_str;
+    if ((size_str = strtok_r(NULL, " ", &strtok_state)) == NULL) {
+      command_error(input_file_name, line_number);
+      printf("file size not provided for resize\n");
+      return;
+    }
+
+    char *endptr = NULL;
+    errno = 0;
+    long str_length = strtol(size_str, &endptr, 10);
+    int size = -1;
+    if (0 <= str_length && str_length <= INT_MAX) {
+      size = str_length;
+    } else {
+      fprintf(stderr, "file size exceeds size of int lol");
+    }
+
+    // unable to parse integer
+    if (errno != 0 || size < 0) {
+      command_error(input_file_name, line_number);
+      printf("cannot parse integer in resize\n");
+      return;
+    }
+
+    // errno == 0 at this point
+    // leftover characters after strtol
+    if (*endptr != '\0') {
+      command_error(input_file_name, line_number);
+      printf("there's extra stuff\n");
+      return;
+    }
+
+    // file name too long
+    if (strlen(name) > 5) {
+      command_error(input_file_name, line_number);
+      printf("file name too long\n");
+      return;
+    }
+
+    // too many arguments
+    if (strtok_r(NULL, " ", &strtok_state) != NULL) {
+      command_error(input_file_name, line_number);
+      printf("too many arguments for resize file\n");
+      return;
+    }
+
+    if (DISK_FD == -1) {
+      error_no_filesystem_mounted();
+      return;
+    }
+    fs_resize(name, size);
   } else if (strcmp(first_token, "O") == 0) {
     fs_defrag();
   } else if (strcmp(first_token, "Y") == 0) {

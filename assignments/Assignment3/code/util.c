@@ -16,6 +16,8 @@ extern int CWD;
 extern Super_block *SUPER_BLOCK;
 extern uint8_t BUFFER[1024];
 
+void erase_block(uint8_t block);
+
 void seek_beginning_file() {
   if (lseek(DISK_FD, 0, SEEK_SET) < -1) {
     perror("error seeking to beginning of file");
