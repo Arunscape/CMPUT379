@@ -159,14 +159,17 @@ bool check_six() {
 
   for (uint8_t i = 0; i < 126; i += 1) {
     Inode inode = SUPER_BLOCK->inode[i];
-    if (!inode_in_use(inode))
+    if (inode_is_free(inode))
       continue;
     if (inode_parent(inode) == 126)
       return false;
-
-    if (0 <= inode_parent(inode) && inode_parent(inode) <= 125)
-      if (!inode_in_use(inode) || !inode_is_directory(inode))
+    
+    uint8_t parent_index = inode_parent(inode);
+    if (0 <= parent_index && parent_index <= 125){
+      Inode parent = SUPER_BLOCK->inode[parent_index];
+      if (inode_is_free(parent) || inode_is_file(parent))
         return false;
+    }
   }
   return true;
 }
