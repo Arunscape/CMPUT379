@@ -256,27 +256,6 @@ uint8_t num_children(uint8_t index) {
   return count;
 }
 
-void calculate_and_print_directory(Inode inode, uint8_t index) {
-
-  uint8_t cwd_count = num_children(CWD);
-  uint8_t parent_count = num_children(inode_parent(inode));
-  print_directory(".", cwd_count);
-  print_directory("..", parent_count);
-
-  for (uint8_t i=0; i < 126; i+=1){
-    Inode inode = SUPER_BLOCK->inode[i];
-
-    if (inode_is_free(inode))
-      continue;
-
-    if (inode_parent(inode) != CWD)
-      continue;
-
-    uint8_t count = num_children(i);
-    print_directory(inode.name, count);
-  }
-}
-
 bool inode_name_equals(Inode inode, char name[5]) {
   return strncmp(inode.name, name, 5) == 0;
 }
