@@ -20,7 +20,7 @@ void erase_block(uint8_t block);
 
 void seek_beginning_file() {
   if (lseek(DISK_FD, 0, SEEK_SET) < -1) {
-    perror("error seeking to beginning of file");
+    perror("error seeking to beginning of disk");
   }
 }
 
@@ -46,7 +46,7 @@ bool attempt_mount(char *new_disk_name) {
 
   DISK_FD = open(new_disk_name, O_RDWR);
   if (DISK_FD < 0) {
-    perror("delete me");
+    // perror("delete me");
     fprintf(stderr, "Error: Cannot find disk %s\n", new_disk_name);
     return false;
   }
@@ -87,7 +87,7 @@ bool inode_is_file(Inode inode) { return !inode_is_directory(inode); }
 
 void write_superblock() {
   if (write(DISK_FD, SUPER_BLOCK, sizeof(Super_block)) < 0) {
-    fprintf(stderr, "WHAT");
+    perror("error writing superblock");
   }
   seek_beginning_file();
 }
@@ -163,7 +163,7 @@ void update_inode(uint8_t i, char name[5], uint8_t size, uint8_t start_block,
 }
 
 void update_blocks(uint8_t start, uint8_t end, bool set) {
-  fprintf(stderr, "SETTING BLOCKS %u to %u to %d\n", start, end - 1, set);
+  // fprintf(stderr, "SETTING BLOCKS %u to %u to %d\n", start, end - 1, set);
   for (uint8_t i = start; i < end; i += 1) {
     uint8_t index = i / 8;
     uint8_t bitmask = 1 << (7 - (i % 8));
@@ -193,7 +193,7 @@ void delete_inode(Inode *inode) {
   if (inode_is_file(*inode)) {
     char name[5];
     strncpy(name, inode->name, 5);
-    printf("TRYING TO DELETE INODE %s\n", name);
+    // printf("TRYING TO DELETE INODE %s\n", name);
     update_blocks(inode->start_block,
                   inode->start_block + inode_used_size(*inode), false);
   }
@@ -205,7 +205,7 @@ void recursive_delete_inode(Inode *inode, uint8_t index) {
 
   char name[5];
   strncpy(name, inode->name, 5);
-  printf("DELETING DIRECTORY INODE %s with index: %u\n", name, index);
+  // printf("DELETING DIRECTORY INODE %s with index: %u\n", name, index);
   for (int i = 0; i < 126; i += 1) {
     if (i == index)
       continue;
