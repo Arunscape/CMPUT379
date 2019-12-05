@@ -282,7 +282,13 @@ void fs_resize(char name[5], int new_size) {
   // new size equals old size
 }
 void fs_defrag(void) {
-  // TA said the strategy is to copy the data blocks to memory, then write
-  // to the disk in the correct order
+
+  Inode inodes[126] = {0};
+  for (uint8_t i = 0; i < 126; i += 1) {
+    Inode inode = SUPER_BLOCK->inode[i];
+    inodes[i] = inode;
+  }
+
+  qsort(&inodes, 126, sizeof(Inode), inode_compare);
 }
 void fs_cd(char name[5]) {}
