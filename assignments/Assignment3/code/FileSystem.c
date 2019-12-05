@@ -283,12 +283,30 @@ void fs_resize(char name[5], int new_size) {
 }
 void fs_defrag(void) {
 
-  Inode inodes[126] = {0};
+  Inode* inodes[126] = {0};
+  uint8_t count = 0;
   for (uint8_t i = 0; i < 126; i += 1) {
-    Inode inode = SUPER_BLOCK->inode[i];
-    inodes[i] = inode;
+    Inode* inode = &SUPER_BLOCK->inode[i];
+    if (inode_is_free(*inode))
+      continue;
+    inodes[count] = inode;
+    count += 1;
   }
 
-  qsort(&inodes, 126, sizeof(Inode), inode_compare);
+  qsort(&inodes, count, sizeof(Inode*), inode_compare);
+  
+  uint8_t start_block = 1;
+  for (uint8_t i=0; i< count; i+=1){ // for each file
+    Inode* inode = inodes[i];
+    
+    for(uint8_t offset = 0; offset < inode_used_size(*inode); offset += 1){
+      copy_block(inode->start_block + offset, start_block + offset);
+    }
+    update_blocks(inode->start_block, inode->start_block + inode_used_size(*inode), false);
+    update_blocks(start_block, start_block + inode_used_size(*inode), true);
+    inode->start_block = start_block;
+    start_block += inode_used_size(*inode);
+  }
+  write_superblock();
 }
 void fs_cd(char name[5]) {}

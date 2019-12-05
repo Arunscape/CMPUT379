@@ -60,4 +60,5 @@ void read_into_buffer(uint8_t block, uint8_t buffer[1024]);
 void write_buffer(uint8_t block, uint8_t buffer[1024]);
 void copy_block(uint8_t src, uint8_t dest);
 int inode_compare(const Inode *i1, const Inode *i2);
+void erase_block(uint8_t block);
 #endif
