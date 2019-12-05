@@ -382,9 +382,44 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     }
     fs_resize(name, size);
   } else if (strcmp(first_token, "O") == 0) {
+    // too many arguments
+    if (strtok_r(NULL, " ", &strtok_state) != NULL) {
+      command_error(input_file_name, line_number);
+      printf("too many arguments for resize file\n");
+      return;
+    }
+
+    if (DISK_FD == -1) {
+      error_no_filesystem_mounted();
+      return;
+    }
+
     fs_defrag();
   } else if (strcmp(first_token, "Y") == 0) {
-    char name[5];
+    char *name;
+    if ((name = strtok_r(NULL, " ", &strtok_state)) == NULL) {
+      command_error(input_file_name, line_number);
+      printf("file name not provided for delete\n");
+      return;
+    }
+    // file name too long
+    if (strlen(name) > 5) {
+      command_error(input_file_name, line_number);
+      printf("file name too long\n");
+      return;
+    }
+
+    // too many arguments
+    if (strtok_r(NULL, " ", &strtok_state) != NULL) {
+      command_error(input_file_name, line_number);
+      printf("too many arguments for delete file\n");
+      return;
+    }
+
+    if (DISK_FD == -1) {
+      error_no_filesystem_mounted();
+      return;
+    }
     fs_cd(name);
   } else
     command_error(input_file_name, line_number);
