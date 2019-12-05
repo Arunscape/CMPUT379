@@ -310,4 +310,35 @@ void fs_defrag(void) {
   }
   write_superblock();
 }
-void fs_cd(char name[5]) {}
+void fs_cd(char name[5]) {
+
+  if (strcmp(name, ".") == 0)
+    return;
+
+  if (strcmp(name, "..") == 0) {
+    if (CWD == 127)
+      return;
+    Inode inode = SUPER_BLOCK->inode[CWD]; // should be a directory
+    CWD = inode_parent(inode);
+  }
+
+  for (uint8_t i = 0; i < 126; i += 1) {
+    Inode inode = SUPER_BLOCK->inode[i];
+    if (inode_is_free(inode))
+      continue;
+
+    if (inode_is_file(inode))
+      continue;
+
+    if (inode_parent(inode) != CWD)
+      continue;
+
+    if (inode_name_not_equals(name))
+      continue;
+
+    CWD = i;
+    return;
+  }
+
+  fprintf(stderr, "Error: Directory %s does not exist\n", name);
+}
