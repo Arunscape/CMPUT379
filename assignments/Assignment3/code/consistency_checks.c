@@ -163,9 +163,9 @@ bool check_six() {
       continue;
     if (inode_parent(inode) == 126)
       return false;
-    
+
     uint8_t parent_index = inode_parent(inode);
-    if (0 <= parent_index && parent_index <= 125){
+    if (0 <= parent_index && parent_index <= 125) {
       Inode parent = SUPER_BLOCK->inode[parent_index];
       if (inode_is_free(parent) || inode_is_file(parent))
         return false;

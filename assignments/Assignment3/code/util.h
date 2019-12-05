@@ -42,7 +42,6 @@ void print_directory(char name[5], uint8_t num_children);
 
 uint8_t num_children(uint8_t index);
 
-
 bool inode_not_in_cwd(Inode inode);
 bool inode_in_cwd(Inode inode);
 

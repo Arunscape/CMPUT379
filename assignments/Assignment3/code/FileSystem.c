@@ -47,7 +47,7 @@ void fs_create(char name[5], int size) {
   // printf("WRITING TO INODE %u\n", first_available_inode);
   if (first_available_inode < 0) {
 
-    printf("create: NO INODES AVAILABLE\n"); // TODO
+    // printf("create: NO INODES AVAILABLE\n"); // TODO
 
     fprintf(stderr,
             "Error: Superblock in <disk name> is full, cannot create %s\n",
@@ -62,7 +62,7 @@ void fs_create(char name[5], int size) {
 
   int8_t first_available_block = get_first_available_block();
   if (first_available_block < 0) {
-    printf("create: NO BLOCKS AVAILABLE\n"); // TODO
+    // printf("create: NO BLOCKS AVAILABLE\n"); // TODO
     fprintf(stderr, "Error: Cannot allocate %d, on <TODO GET DISK NAME>", size);
     return;
   }
@@ -125,8 +125,8 @@ void fs_delete(char name[5]) {
 }
 
 void fs_read(char name[5], int block_num) {
-  printf("\n\nREADING FILE WITH NAME %s, and block num %d\n\n", name,
-         block_num);
+  // printf("\n\nREADING FILE WITH NAME %s, and block num %d\n\n", name,
+  //     block_num);
 
   bool did_not_read_into_buffer = true;
   bool invalid_block_num = false;
@@ -215,7 +215,7 @@ void fs_ls(void) {
 
   uint8_t cwd_count = num_children(CWD);
   print_directory(".", cwd_count);
-  
+
   uint8_t parent_count = num_children(inode_parent(SUPER_BLOCK->inode[CWD]));
   print_directory("..", parent_count);
 
