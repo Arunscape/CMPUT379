@@ -14,6 +14,7 @@
 extern int DISK_FD;
 extern int CWD;
 extern Super_block *SUPER_BLOCK;
+extern uint8_t BUFFER[1024];
 
 void seek_beginning_file() {
   if (lseek(DISK_FD, 0, SEEK_SET) < -1) {
@@ -172,9 +173,11 @@ void update_blocks(uint8_t start, uint8_t end, bool set) {
       // uint8_t idk = (uint8_t) SUPER_BLOCK->free_block_list[index];
       // printf("setting block %d to %u\n", index, idk);
     } else {
+      // I could've used ~
       bitmask = bitmask ^ 0b11111111;
       SUPER_BLOCK->free_block_list[index] =
           SUPER_BLOCK->free_block_list[index] & bitmask;
+      erase_block(i);
     }
   }
 
@@ -275,7 +278,16 @@ uint8_t get_inode_with_name_in_cwd(char name[5]) {
   return 255;
 }
 
-bool can_allocate_start_block(uint8_t start, uint8_t size);
+bool can_allocate_start_block(uint8_t start, uint8_t size) {
+
+  for (uint8_t i = start; i < start + size; i += 1) {
+    if (block_in_use(i)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 uint8_t get_start_block_for_allocation(uint8_t size, uint8_t search_start) {
 
   for (uint8_t candidate = search_start; candidate < 128; candidate += 1) {
@@ -288,13 +300,38 @@ uint8_t get_start_block_for_allocation(uint8_t size, uint8_t search_start) {
   return 255;
 }
 
-bool can_allocate_start_block(uint8_t start, uint8_t size) {
-
-  for (uint8_t i = start; i < start + size; i += 1) {
-    if (block_in_use(i)) {
-      return false;
-      fprintf(stderr, "Block %d in use\n", i); // TODO
-    }
+// assumes block number is valid
+void read_into_buffer(uint8_t block, uint8_t buffer[1024]) {
+  if (lseek(DISK_FD, block, SEEK_SET) < -1) {
+    perror("error seeking to the block");
+    return;
   }
-  return true;
+  if (read(DISK_FD, buffer, 1024) < 0) {
+    perror("error reading block to buffer");
+    return;
+  }
+  seek_beginning_file();
+}
+
+void write_buffer(uint8_t block, uint8_t buffer[1024]) {
+  if (lseek(DISK_FD, block, SEEK_SET) < -1) {
+    perror("error seeking to the block");
+    return;
+  }
+  if (write(DISK_FD, buffer, 1024) < 0) {
+    perror("error writing block to buffer");
+    return;
+  }
+  seek_beginning_file();
+}
+
+void copy_block(uint8_t src, uint8_t dest) {
+  uint8_t buffer[1024] = {0};
+  read_into_buffer(src, buffer);
+  write_buffer(dest, buffer);
+}
+
+void erase_block(uint8_t block) {
+  uint8_t buffer[1024] = {0};
+  write_buffer(block, buffer);
 }

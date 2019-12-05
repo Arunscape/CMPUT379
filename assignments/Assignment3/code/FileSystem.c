@@ -149,17 +149,8 @@ void fs_read(char name[5], int block_num) {
 
     // also the block num is valid now
 
-    if (lseek(DISK_FD, 1024 * (inode.start_block + block_num), SEEK_SET) < -1) {
-      perror("error seeking to the block");
-      return;
-    }
+    read_into_buffer(1024 * (inode.start_block + block_num), BUFFER);
 
-    if (read(DISK_FD, BUFFER, 1024) < 0) {
-      perror("error reading block to buffer");
-      return;
-    }
-
-    seek_beginning_file();
     did_not_read_into_buffer = false;
   }
 
@@ -197,17 +188,7 @@ void fs_write(char name[5], int block_num) {
 
     // also the block num is valid now
 
-    if (lseek(DISK_FD, 1024 * (inode.start_block + block_num), SEEK_SET) < -1) {
-      perror("error seeking to the block");
-      return;
-    }
-
-    if (write(DISK_FD, BUFFER, 1024) < 0) {
-      perror("error reading block to buffer");
-      return;
-    }
-
-    seek_beginning_file();
+    write_buffer(1024 * (inode.start_block + block_num), BUFFER);
     did_not_write_buffer = false;
   }
 
@@ -267,9 +248,15 @@ void fs_resize(char name[5], int new_size) {
     }
 
     uint8_t start_block = get_start_block_for_allocation(new_size, 0);
-    if (start_block > 127){
+    if (start_block > 127) {
       error = true;
     } else {
+
+      // copy the blocks over
+
+      for (uint8_t i = 0; i < inode_used_size(*inode); i += 1) {
+        copy_block(inode->start_block + i, start_block + i);
+      }
       update_blocks(start_block, start_block + new_size, false);
       update_inode(inode_index, inode->name, new_size, start_block,
                    inode->dir_parent, true, false);
