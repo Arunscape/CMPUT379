@@ -140,7 +140,7 @@ void fs_read(char name[5], int block_num) {
     if (inode_is_directory(inode))
       continue;
 
-    if (strncmp(inode.name, name, 5) != 0)
+    if (inode_name_not_equals(inode, name))
       continue;
 
     // we're in the same directory, and the name matches, and it's a file
@@ -151,7 +151,7 @@ void fs_read(char name[5], int block_num) {
 
     // also the block num is valid now
 
-    read_into_buffer(1024 * (inode.start_block + block_num), BUFFER);
+    read_into_buffer(inode.start_block + block_num, BUFFER);
 
     did_not_read_into_buffer = false;
   }
@@ -190,8 +190,9 @@ void fs_write(char name[5], int block_num) {
     }
 
     // also the block num is valid now
-
-    write_buffer(1024 * (inode.start_block + block_num), BUFFER);
+    printf("INODE START BLOCK: %d\n", inode.start_block);
+    printf("INODE NAME: %s\n", inode.name);
+    write_buffer(inode.start_block + block_num, BUFFER);
     did_not_write_buffer = false;
   }
 

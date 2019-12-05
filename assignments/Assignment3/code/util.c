@@ -302,8 +302,8 @@ uint8_t get_start_block_for_allocation(uint8_t size, uint8_t search_start) {
 }
 
 // assumes block number is valid
-void read_into_buffer(uint8_t block, uint8_t buffer[1024]) {
-  if (lseek(DISK_FD, block, SEEK_SET) < -1) {
+void read_into_buffer(int block, uint8_t buffer[1024]) {
+  if (lseek(DISK_FD, block * 1024, SEEK_SET) < -1) {
     perror("error seeking to the block");
     return;
   }
@@ -314,8 +314,10 @@ void read_into_buffer(uint8_t block, uint8_t buffer[1024]) {
   seek_beginning_file();
 }
 
-void write_buffer(uint8_t block, uint8_t buffer[1024]) {
-  if (lseek(DISK_FD, block, SEEK_SET) < -1) {
+void write_buffer(int block, uint8_t buffer[1024]) {
+  printf("WRITING TO BLOCK %d\n", block);
+
+  if (lseek(DISK_FD, block * 1024, SEEK_SET) < -1) {
     perror("error seeking to the block");
     return;
   }
