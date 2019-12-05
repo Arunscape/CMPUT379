@@ -341,7 +341,7 @@ void erase_block(uint8_t block) {
 int inode_compare(const Inode *i1, const Inode *i2) {
   if (i1->start_block < i2->start_block)
     return -1;
-  
+
   if (i1->start_block > i2->start_block)
     return 1;
 
