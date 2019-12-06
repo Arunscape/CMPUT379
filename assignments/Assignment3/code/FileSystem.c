@@ -192,6 +192,7 @@ void fs_write(char name[5], int block_num) {
     // also the block num is valid now
     write_buffer(inode.start_block + block_num, BUFFER);
     did_not_write_buffer = false;
+    break;
   }
 
   if (did_not_write_buffer) {

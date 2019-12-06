@@ -329,7 +329,11 @@ void erase_block(uint8_t block) {
   write_buffer(block, buffer);
 }
 
-int inode_compare(const Inode *i1, const Inode *i2) {
+int inode_compare(const void *a, const void *b) {
+
+  Inode* i1 = (Inode*) a;
+  Inode* i2 = (Inode*) b;
+
   if (i1->start_block < i2->start_block)
     return -1;
 
