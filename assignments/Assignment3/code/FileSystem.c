@@ -335,6 +335,7 @@ void fs_cd(char name[5]) {
       return;
     Inode inode = SUPER_BLOCK->inode[CWD]; // should be a directory
     CWD = inode_parent(inode);
+    return;
   }
 
   for (uint8_t i = 0; i < 126; i += 1) {

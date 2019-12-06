@@ -18,17 +18,10 @@ extern uint8_t BUFFER[1024];
 
 void erase_block(uint8_t block);
 
-void seek_beginning_file() {
-  if (lseek(DISK_FD, 0, SEEK_SET) < -1) {
-    perror("error seeking to beginning of disk");
-  }
-}
-
 void load_superblock() {
-  if (read(DISK_FD, SUPER_BLOCK, sizeof(Super_block)) < 0) {
+  if (pread(DISK_FD, SUPER_BLOCK, sizeof(Super_block), 0) < 0) {
     perror("error reading superblock");
   }
-  seek_beginning_file();
 }
 
 bool no_filesystem_mounted() {
@@ -86,10 +79,9 @@ bool inode_is_directory(Inode inode) { return (inode.dir_parent >> 7) & 1; }
 bool inode_is_file(Inode inode) { return !inode_is_directory(inode); }
 
 void write_superblock() {
-  if (write(DISK_FD, SUPER_BLOCK, sizeof(Super_block)) < 0) {
+  if (pwrite(DISK_FD, SUPER_BLOCK, sizeof(Super_block), 0) < 0) {
     perror("error writing superblock");
   }
-  seek_beginning_file();
 }
 
 bool block_in_use(uint8_t i) {
@@ -233,7 +225,7 @@ void recursive_delete_inode(Inode *inode, uint8_t index) {
 }
 
 void print_file(char name[5], uint8_t size) {
-  printf("%-5s %3d KB\n", name, size);
+  printf("%-5.5s %3d KB\n", name, size);
 }
 
 void print_directory(char name[5], uint8_t num_children) {
@@ -303,29 +295,27 @@ uint8_t get_start_block_for_allocation(uint8_t size, uint8_t search_start) {
 
 // assumes block number is valid
 void read_into_buffer(int block, uint8_t buffer[1024]) {
-  if (lseek(DISK_FD, block * 1024, SEEK_SET) < -1) {
-    perror("error seeking to the block");
-    return;
-  }
-  if (read(DISK_FD, buffer, 1024) < 0) {
+  //if (lseek(DISK_FD, block * 1024, SEEK_SET) < -1) {
+  //  perror("error seeking to the block");
+  //  return;
+  //}
+  if (pread(DISK_FD, buffer, 1024, block * 1024) < 0) {
     perror("error reading block to buffer");
     return;
   }
-  seek_beginning_file();
 }
 
 void write_buffer(int block, uint8_t buffer[1024]) {
   // printf("WRITING TO BLOCK %d\n", block);
 
-  if (lseek(DISK_FD, block * 1024, SEEK_SET) < -1) {
-    perror("error seeking to the block");
-    return;
-  }
-  if (write(DISK_FD, buffer, 1024) < 0) {
+  //if (lseek(DISK_FD, block * 1024, SEEK_SET) < -1) {
+  //  perror("error seeking to the block");
+  //  return;
+  //}
+  if (pwrite(DISK_FD, buffer, 1024, block * 1024) < 0) {
     perror("error writing block to buffer");
     return;
   }
-  seek_beginning_file();
 }
 
 void copy_block(uint8_t src, uint8_t dest) {

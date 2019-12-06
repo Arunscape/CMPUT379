@@ -8,6 +8,7 @@
 #include "FileSystem.h"
 
 extern int DISK_FD;
+extern Super_block* SUPER_BLOCK;
 
 void run_command(char *line, size_t line_number, const char *input_file_name);
 
@@ -30,13 +31,14 @@ void process_input(const char *file) {
 
     // strip \n
     line = strtok(line, "\n");
-    run_command(line, line_number, file); // &mut line
     line_number += 1;
+    run_command(line, line_number, file); // &mut line
   }
 
   free(line);
   fclose(f);
   close(DISK_FD);
+  free(SUPER_BLOCK);
 }
 
 void command_error(const char *input_file_name, size_t line_number) {
@@ -84,7 +86,7 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     char *size_str;
     if ((size_str = strtok_r(NULL, " ", &strtok_state)) == NULL) {
       command_error(input_file_name, line_number);
-      printf("file size not provided for create\n");
+      // printf("file size not provided for create\n");
       return;
     }
 
@@ -227,7 +229,7 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     char *name;
     if ((name = strtok_r(NULL, " ", &strtok_state)) == NULL) {
       command_error(input_file_name, line_number);
-      printf("file name not provided for write\n");
+      // printf("file name not provided for write\n");
       return;
     }
 
@@ -235,7 +237,7 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     char *block_num_str;
     if ((block_num_str = strtok_r(NULL, " ", &strtok_state)) == NULL) {
       command_error(input_file_name, line_number);
-      printf("block_num not provided for write\n");
+      // printf("block_num not provided for write\n");
       return;
     }
 
