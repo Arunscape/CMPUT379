@@ -319,7 +319,7 @@ void fs_defrag(void) {
     count += 1;
   }
 
-  qsort(&inodes, count, sizeof(Inode *), inode_compare);
+  qsort(inodes, count, sizeof(Inode *), inode_compare);
 
   uint8_t start_block = 1;
   for (uint8_t i = 0; i < count; i += 1) { // for each file
