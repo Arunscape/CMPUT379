@@ -255,9 +255,10 @@ void fs_resize(char name[5], int new_size) {
   if (new_size > inode_used_size(*inode)) {
     // need to allocate more blocks to this file
     if (can_allocate_start_block(inode->start_block, new_size)) {
-      update_blocks(inode->start_block, inode->start_block + new_size, false);
+      update_blocks(inode->start_block, inode->start_block + new_size, true);
       update_inode(inode_index, inode->name, new_size, inode->start_block,
                    inode->dir_parent, true, false);
+      write_superblock();
       return;
     }
 
@@ -271,9 +272,13 @@ void fs_resize(char name[5], int new_size) {
       for (uint8_t i = 0; i < inode_used_size(*inode); i += 1) {
         copy_block(inode->start_block + i, start_block + i);
       }
-      update_blocks(start_block, start_block + new_size, false);
+      // allocate new blocks
+      update_blocks(start_block, start_block + new_size, true);
+      // erase old blocks
+      update_blocks(inode->start_block, inode->start_block + inode_used_size(*inode), false);
       update_inode(inode_index, inode->name, new_size, start_block,
                    inode->dir_parent, true, false);
+      write_superblock();
       return;
     }
   }
@@ -290,6 +295,7 @@ void fs_resize(char name[5], int new_size) {
     update_blocks(zero_start, zero_end, false);
     update_inode(inode_index, inode->name, new_size, inode->start_block,
                  inode->dir_parent, true, false);
+    write_superblock();
     return;
   }
 
