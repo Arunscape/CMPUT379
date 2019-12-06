@@ -134,6 +134,9 @@ void fs_read(char name[5], int block_num) {
   for (uint8_t i = 0; i < 126; i += 1) {
     Inode inode = SUPER_BLOCK->inode[i];
 
+    if (inode_is_free(inode))
+        continue;
+
     if (inode_not_in_cwd(inode))
       continue;
 
@@ -154,6 +157,7 @@ void fs_read(char name[5], int block_num) {
     read_into_buffer(inode.start_block + block_num, BUFFER);
 
     did_not_read_into_buffer = false;
+    break;
   }
 
   if (did_not_read_into_buffer) {
