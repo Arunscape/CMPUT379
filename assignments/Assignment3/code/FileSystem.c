@@ -253,6 +253,7 @@ void fs_resize(char name[5], int new_size) {
 
   bool error = false;
   if (new_size > inode_used_size(*inode)) {
+    // TODO i haven't tested this branch yet
     // need to allocate more blocks to this file
     if (can_allocate_start_block(inode->start_block, new_size)) {
       update_blocks(inode->start_block, inode->start_block + new_size, true);
