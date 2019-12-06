@@ -135,7 +135,7 @@ void fs_read(char name[5], int block_num) {
     Inode inode = SUPER_BLOCK->inode[i];
 
     if (inode_is_free(inode))
-        continue;
+      continue;
 
     if (inode_not_in_cwd(inode))
       continue;
@@ -280,7 +280,8 @@ void fs_resize(char name[5], int new_size) {
       // allocate new blocks
       update_blocks(start_block, start_block + new_size, true);
       // erase old blocks
-      update_blocks(inode->start_block, inode->start_block + inode_used_size(*inode), false);
+      update_blocks(inode->start_block,
+                    inode->start_block + inode_used_size(*inode), false);
       update_inode(inode_index, inode->name, new_size, start_block,
                    inode->dir_parent, true, false);
       write_superblock();

@@ -295,7 +295,7 @@ uint8_t get_start_block_for_allocation(uint8_t size, uint8_t search_start) {
 
 // assumes block number is valid
 void read_into_buffer(int block, uint8_t buffer[1024]) {
-  //if (lseek(DISK_FD, block * 1024, SEEK_SET) < -1) {
+  // if (lseek(DISK_FD, block * 1024, SEEK_SET) < -1) {
   //  perror("error seeking to the block");
   //  return;
   //}
@@ -308,7 +308,7 @@ void read_into_buffer(int block, uint8_t buffer[1024]) {
 void write_buffer(int block, uint8_t buffer[1024]) {
   // printf("WRITING TO BLOCK %d\n", block);
 
-  //if (lseek(DISK_FD, block * 1024, SEEK_SET) < -1) {
+  // if (lseek(DISK_FD, block * 1024, SEEK_SET) < -1) {
   //  perror("error seeking to the block");
   //  return;
   //}
@@ -331,8 +331,8 @@ void erase_block(uint8_t block) {
 
 int inode_compare(const void *a, const void *b) {
 
-  const Inode* i1 = *(Inode**) a;
-  const Inode* i2 = *(Inode**) b;
-  
-  return (int) i1->start_block - (int) i2->start_block;
+  const Inode *i1 = *(Inode **)a;
+  const Inode *i2 = *(Inode **)b;
+
+  return (int)i1->start_block - (int)i2->start_block;
 }

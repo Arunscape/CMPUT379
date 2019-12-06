@@ -8,7 +8,7 @@
 #include "FileSystem.h"
 
 extern int DISK_FD;
-extern Super_block* SUPER_BLOCK;
+extern Super_block *SUPER_BLOCK;
 
 void run_command(char *line, size_t line_number, const char *input_file_name);
 
