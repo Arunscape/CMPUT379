@@ -197,7 +197,7 @@ void fs_write(char name[5], int block_num) {
     // we're in the same directory, and the name matches, and it's a file
     if (block_num < 0 || block_num > (inode_used_size(inode) - 1)) {
       invalid_block_num = true;
-      did_not_write_buffer = false;
+      did_not_write_buffer = false; // we did not write the buffer but this suppresses the message
       break;
     }
 
