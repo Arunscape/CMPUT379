@@ -101,7 +101,7 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     }
 
     // unable to parse integer
-    if (errno != 0 || size < 0) {
+    if (errno != 0 || size < 0 || size > 127) {
       command_error(input_file_name, line_number);
       printf("cannot parse integer in create\n");
       return;
@@ -118,7 +118,7 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     // file name too long
     if (strlen(name) > 5) {
       command_error(input_file_name, line_number);
-      printf("file name too long\n");
+//      printf("file name too long\n");
       return;
     }
 
@@ -312,7 +312,7 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     // too many arguments
     if (strtok_r(NULL, " ", &strtok_state) != NULL) {
       command_error(input_file_name, line_number);
-      printf("too many arguments for ls\n");
+//      printf("too many arguments for ls\n");
       return;
     }
 

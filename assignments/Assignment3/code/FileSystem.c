@@ -161,7 +161,7 @@ void fs_read(char name[5], int block_num) {
   }
 
   if (did_not_read_into_buffer) {
-    fprintf(stderr, "Error: file %s does not exist", name);
+    fprintf(stderr, "Error: file %s does not exist\n", name);
     return;
   }
 
@@ -190,6 +190,7 @@ void fs_write(char name[5], int block_num) {
     // we're in the same directory, and the name matches, and it's a file
     if (block_num < 0 || block_num > (inode_used_size(inode) - 1)) {
       invalid_block_num = true;
+      did_not_write_buffer = false;
       break;
     }
 
@@ -200,7 +201,7 @@ void fs_write(char name[5], int block_num) {
   }
 
   if (did_not_write_buffer) {
-    fprintf(stderr, "Error: file %s does not exist", name);
+    fprintf(stderr, "Error: file %s does not exist\n", name);
     return;
   }
 
@@ -221,6 +222,8 @@ void fs_ls(void) {
   print_directory(".", cwd_count);
 
   uint8_t parent_count = num_children(inode_parent(SUPER_BLOCK->inode[CWD]));
+  if (CWD == 127)
+      parent_count = cwd_count;
   print_directory("..", parent_count);
 
   for (uint8_t i = 0; i < 126; i += 1) {

@@ -41,6 +41,7 @@ bool attempt_mount(char *new_disk_name) {
   if (DISK_FD < 0) {
     // perror("delete me");
     fprintf(stderr, "Error: Cannot find disk %s\n", new_disk_name);
+    DISK_FD = old_disk_fd;
     return false;
   }
 
