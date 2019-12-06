@@ -9,6 +9,7 @@
 
 extern int DISK_FD;
 extern Super_block *SUPER_BLOCK;
+extern char* DISK_NAME;
 
 void run_command(char *line, size_t line_number, const char *input_file_name);
 
@@ -39,6 +40,7 @@ void process_input(const char *file) {
   fclose(f);
   close(DISK_FD);
   free(SUPER_BLOCK);
+  free(DISK_NAME);
 }
 
 void command_error(const char *input_file_name, size_t line_number) {

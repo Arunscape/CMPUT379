@@ -19,10 +19,17 @@ Super_block *SUPER_BLOCK = NULL;
 int DISK_FD = -1;
 int8_t CWD = -1;
 uint8_t BUFFER[1024] = {0};
+char* DISK_NAME = NULL;
 
 void fs_mount(char *new_disk_name) {
   if (attempt_mount(new_disk_name)) {
     // successfully mounted
+    if (DISK_NAME != NULL){
+      free(DISK_NAME);
+      DISK_NAME = NULL;
+    }
+
+    DISK_NAME = strdup(new_disk_name);
     return;
   }
 
@@ -63,7 +70,7 @@ void fs_create(char name[5], int size) {
   int8_t first_available_block = get_first_available_block();
   if (first_available_block < 0) {
     // printf("create: NO BLOCKS AVAILABLE\n"); // TODO
-    fprintf(stderr, "Error: Cannot allocate %d, on <TODO GET DISK NAME>", size);
+    fprintf(stderr, "Error: Cannot allocate %d on %s\n", size, DISK_NAME);
     return;
   }
 
@@ -73,8 +80,8 @@ void fs_create(char name[5], int size) {
         get_start_block_for_allocation(size, first_available_block);
 
     if (start_block > 127 || (start_block + size - 1 > 127)) {
-      fprintf(stderr, "Error: Cannot allocate %d, on <TODO GET DISK NAME>",
-              size);
+      fprintf(stderr, "Error: Cannot allocate %d on %s\n",
+              size, DISK_NAME);
       return;
     }
 
@@ -121,7 +128,7 @@ void fs_delete(char name[5]) {
   }
 
   if (did_not_delete)
-    fprintf(stderr, "File or directory %s does not exist\n", name);
+    fprintf(stderr, "Error: File or directory %s does not exist\n", name);
 }
 
 void fs_read(char name[5], int block_num) {
@@ -161,12 +168,12 @@ void fs_read(char name[5], int block_num) {
   }
 
   if (did_not_read_into_buffer) {
-    fprintf(stderr, "Error: file %s does not exist\n", name);
+    fprintf(stderr, "Error: File %s does not exist\n", name);
     return;
   }
 
   if (invalid_block_num) {
-    fprintf(stderr, "Error, %s does not have block %u\n", name, block_num);
+    fprintf(stderr, "Error: %s does not have block %u\n", name, block_num);
     return;
   }
 }
@@ -201,12 +208,12 @@ void fs_write(char name[5], int block_num) {
   }
 
   if (did_not_write_buffer) {
-    fprintf(stderr, "Error: file %s does not exist\n", name);
+    fprintf(stderr, "Error: File %s does not exist\n", name);
     return;
   }
 
   if (invalid_block_num) {
-    fprintf(stderr, "Error, %s does not have block %u\n", name, block_num);
+    fprintf(stderr, "Error: %s does not have block %u\n", name, block_num);
     return;
   }
 }
