@@ -1,4 +1,5 @@
 #define _GNU_SOURCE
+
 #include <fcntl.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -67,6 +68,7 @@ bool attempt_mount(char *new_disk_name) {
 }
 
 uint8_t inode_parent(Inode inode) { return inode.dir_parent & 0b01111111; }
+
 uint8_t inode_used_size(Inode inode) { return inode.used_size & 0b01111111; }
 
 bool inode_in_cwd(Inode inode) { return inode_parent(inode) == CWD; }
@@ -74,9 +76,11 @@ bool inode_in_cwd(Inode inode) { return inode_parent(inode) == CWD; }
 bool inode_not_in_cwd(Inode inode) { return !inode_in_cwd(inode); }
 
 bool inode_in_use(Inode inode) { return (inode.used_size >> 7) & 1; }
+
 bool inode_is_free(Inode inode) { return !inode_in_use(inode); }
 
 bool inode_is_directory(Inode inode) { return (inode.dir_parent >> 7) & 1; }
+
 bool inode_is_file(Inode inode) { return !inode_is_directory(inode); }
 
 void write_superblock() {
@@ -320,8 +324,11 @@ void write_buffer(int block, uint8_t buffer[1024]) {
 }
 
 void copy_block(uint8_t src, uint8_t dest) {
+  if (src == dest)
+    return;
   uint8_t buffer[1024] = {0};
   read_into_buffer(src, buffer);
+  printf("THIS IS WHAT I'M COPYING %s\n", buffer);
   write_buffer(dest, buffer);
 }
 

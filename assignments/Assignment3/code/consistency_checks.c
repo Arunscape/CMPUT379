@@ -17,7 +17,7 @@ bool check_one() {
 
   // assert superblock is marked in use in free space list
   if (((SUPER_BLOCK->free_block_list[0] >> 7) & 1) != 1) {
-    fprintf(stderr, "check 1: block 0 isn't marked as used\n");
+    // fprintf(stderr, "check 1: block 0 isn't marked as used\n");
     return false;
   }
 
@@ -51,18 +51,18 @@ bool check_one() {
     // blocks marked in use in the free space list must be allocated to //
     // exactly one file
     if (block_in_use(i) && usage_count != 1) {
-      fprintf(stderr,
-              "check1: block %u was marked in use but usage count is %u\n", i,
-              usage_count);
+      // fprintf(stderr,
+      //        "check1: block %u was marked in use but usage count is %u\n", i,
+      //        usage_count);
       return false;
     }
 
     // blocks that are marked free in the free-space list cannot be allocated
     // to any file
     if (block_is_free(i) && usage_count > 0) {
-      fprintf(stderr,
-              "check1: block %d was marked free but usage count is %d\n", i,
-              usage_count);
+      // fprintf(stderr,
+      //        "check1: block %d was marked free but usage count is %d\n", i,
+      //        usage_count);
       return false;
     }
   }
@@ -85,8 +85,8 @@ bool check_two() {
         if (inode_parent(other_inode) == i) {
           Inode other_inode = SUPER_BLOCK->inode[i];
 
-          if (strncmp(inode.name, other_inode.name, 5) == 0) {
-            fprintf(stderr, "check2: non unique filename/directory\n");
+          if (inode_name_equals(inode, other_inode.name)) {
+            // fprintf(stderr, "check2: non unique filename/directory\n");
             return false;
           }
         }
@@ -110,14 +110,16 @@ bool check_three() {
       if (inode.name[0] || inode.name[1] || inode.name[2] || inode.name[3] ||
           inode.name[4] || inode.used_size || inode.start_block ||
           inode.dir_parent) {
-        fprintf(stderr, "inode %d is marked free, but its not zeroed out\n", i);
+        // fprintf(stderr, "inode %d is marked free, but its not zeroed out\n",
+        // i);
         return false;
       }
     } else {
       if ((inode.name[0] || inode.name[1] || inode.name[2] || inode.name[3] ||
            inode.name[4]) == 0) {
-        fprintf(stderr, "inode %d is marked used, but its name is zeroed out\n",
-                i);
+        // fprintf(stderr, "inode %d is marked used, but its name is zeroed
+        // out\n",
+        //        i);
         return false;
       }
     }

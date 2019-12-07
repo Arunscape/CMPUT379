@@ -19,12 +19,12 @@ Super_block *SUPER_BLOCK = NULL;
 int DISK_FD = -1;
 int8_t CWD = -1;
 uint8_t BUFFER[1024] = {0};
-char* DISK_NAME = NULL;
+char *DISK_NAME = NULL;
 
 void fs_mount(char *new_disk_name) {
   if (attempt_mount(new_disk_name)) {
     // successfully mounted
-    if (DISK_NAME != NULL){
+    if (DISK_NAME != NULL) {
       free(DISK_NAME);
       DISK_NAME = NULL;
     }
@@ -45,7 +45,7 @@ void fs_create(char name[5], int size) {
 
   if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0) {
     // TODO ask TA what the error message should be
-    fprintf(stderr, ". and .. are reserved names\n");
+    fprintf(stderr, "Error: File or directory %s already exists\n", name);
     return;
   }
 
@@ -80,8 +80,7 @@ void fs_create(char name[5], int size) {
         get_start_block_for_allocation(size, first_available_block);
 
     if (start_block > 127 || (start_block + size - 1 > 127)) {
-      fprintf(stderr, "Error: Cannot allocate %d on %s\n",
-              size, DISK_NAME);
+      fprintf(stderr, "Error: Cannot allocate %d on %s\n", size, DISK_NAME);
       return;
     }
 
@@ -197,7 +196,8 @@ void fs_write(char name[5], int block_num) {
     // we're in the same directory, and the name matches, and it's a file
     if (block_num < 0 || block_num > (inode_used_size(inode) - 1)) {
       invalid_block_num = true;
-      did_not_write_buffer = false; // we did not write the buffer but this suppresses the message
+      did_not_write_buffer =
+          false; // we did not write the buffer but this suppresses the message
       break;
     }
 
@@ -230,7 +230,7 @@ void fs_ls(void) {
 
   uint8_t parent_count = num_children(inode_parent(SUPER_BLOCK->inode[CWD]));
   if (CWD == 127)
-      parent_count = cwd_count;
+    parent_count = cwd_count;
   print_directory("..", parent_count);
 
   for (uint8_t i = 0; i < 126; i += 1) {
@@ -267,7 +267,6 @@ void fs_resize(char name[5], int new_size) {
 
   bool error = false;
   if (new_size > inode_used_size(*inode)) {
-    // TODO i haven't tested this branch yet
     // need to allocate more blocks to this file
     uint8_t alloc_start = inode->start_block + inode_used_size(*inode);
     uint8_t alloc_additional = new_size - inode_used_size(*inode);
@@ -329,7 +328,7 @@ void fs_defrag(void) {
     if (inode_is_free(*inode))
       continue;
     if (inode_is_directory(*inode))
-        continue;
+      continue;
     inodes[count] = inode;
     count += 1;
   }
