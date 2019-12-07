@@ -328,6 +328,8 @@ void fs_defrag(void) {
     Inode *inode = &SUPER_BLOCK->inode[i];
     if (inode_is_free(*inode))
       continue;
+    if (inode_is_directory(*inode))
+        continue;
     inodes[count] = inode;
     count += 1;
   }
