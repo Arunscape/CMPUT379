@@ -5,3 +5,7 @@ vgcore.*
 CMakeLists.txt
 cmake-build-debug/
 untouched
+clean_disk
+dump
+test
+trivial-input
