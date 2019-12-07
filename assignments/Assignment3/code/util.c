@@ -328,7 +328,6 @@ void copy_block(uint8_t src, uint8_t dest) {
     return;
   uint8_t buffer[1024] = {0};
   read_into_buffer(src, buffer);
-  printf("THIS IS WHAT I'M COPYING %s\n", buffer);
   write_buffer(dest, buffer);
 }
 
