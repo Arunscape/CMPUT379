@@ -9,9 +9,7 @@ all: fs
 
 clean:
 	rm -f *.o  *.out vgcore.*
-	rm -f disk0
-	./create_fs disk0
-	chmod 777 disk0
+	rm -f fs
 
 %.o: %.c
 	${CC} ${CFLAGS} -c $< -o $@
@@ -19,6 +17,7 @@ clean:
 fs: $(OBJECTS)
 	$(CC) -o fs $(OBJECTS)
 
+compile: $(OBJECTS)
 
  # add -g to CC flags before enabling
 leak: all
@@ -26,8 +25,11 @@ leak: all
 		 --show-leak-kinds=all \
 		 --track-origins=yes \
 		 --verbose \
-		 ./fs disk0
+		 ./fs trivial-input
 # 		#  --log-file=valgrind-out.txt \
 
 format:
 	clang-format -i *.c *.h
+
+compress:
+	zip fs-sim.zip Makefile readme.md *.h *.c

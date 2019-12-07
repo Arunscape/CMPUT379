@@ -342,8 +342,8 @@ void fs_defrag(void) {
     for (uint8_t offset = 0; offset < inode_used_size(*inode); offset += 1) {
       copy_block(inode->start_block + offset, start_block + offset);
     }
-    update_blocks(inode->start_block,
-                  inode->start_block + inode_used_size(*inode), false);
+    if (start_block != inode->start_block)
+        update_blocks(inode->start_block,inode->start_block + inode_used_size(*inode), false);
     update_blocks(start_block, start_block + inode_used_size(*inode), true);
     inode->start_block = start_block;
     start_block += inode_used_size(*inode);
