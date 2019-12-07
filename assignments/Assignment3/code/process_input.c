@@ -105,7 +105,7 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     // unable to parse integer
     if (errno != 0 || size < 0 || size > 127) {
       command_error(input_file_name, line_number);
-      printf("cannot parse integer in create\n");
+      // printf("cannot parse integer in create\n");
       return;
     }
 
@@ -113,7 +113,7 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     // leftover characters after strtol
     if (*endptr != '\0') {
       command_error(input_file_name, line_number);
-      printf("there's extra stuff\n");
+      // printf("there's extra stuff\n");
       return;
     }
 
@@ -127,7 +127,7 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     // too many arguments
     if (strtok_r(NULL, " ", &strtok_state) != NULL) {
       command_error(input_file_name, line_number);
-      printf("too many arguments for create file\n");
+      // printf("too many arguments for create file\n");
       return;
     }
 
@@ -141,20 +141,20 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     char *name;
     if ((name = strtok_r(NULL, " ", &strtok_state)) == NULL) {
       command_error(input_file_name, line_number);
-      printf("file name not provided for delete\n");
+      // printf("file name not provided for delete\n");
       return;
     }
     // file name too long
     if (strlen(name) > 5) {
       command_error(input_file_name, line_number);
-      printf("file name too long\n");
+      //printf("file name too long\n");
       return;
     }
 
     // too many arguments
     if (strtok_r(NULL, " ", &strtok_state) != NULL) {
       command_error(input_file_name, line_number);
-      printf("too many arguments for delete file\n");
+      //printf("too many arguments for delete file\n");
       return;
     }
 
@@ -169,7 +169,7 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     char *name;
     if ((name = strtok_r(NULL, " ", &strtok_state)) == NULL) {
       command_error(input_file_name, line_number);
-      printf("file name not provided for read\n");
+      // printf("file name not provided for read\n");
       return;
     }
 
@@ -177,7 +177,7 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     char *block_num_str;
     if ((block_num_str = strtok_r(NULL, " ", &strtok_state)) == NULL) {
       command_error(input_file_name, line_number);
-      printf("block_num not provided for read\n");
+      // printf("block_num not provided for read\n");
       return;
     }
 
@@ -188,13 +188,13 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     if (0 <= str_block_num && str_block_num <= INT_MAX) {
       block_num = str_block_num;
     } else {
-      fprintf(stderr, "block num exceeds size of int lol");
+      //fprintf(stderr, "block num exceeds size of int lol");
     }
 
     // unable to parse integer
     if (errno != 0 || block_num < 0) {
       command_error(input_file_name, line_number);
-      printf("cannot parse integer in create\n");
+      //printf("cannot parse integer in create\n");
       return;
     }
 
@@ -202,21 +202,21 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     // leftover characters after strtol
     if (*endptr != '\0') {
       command_error(input_file_name, line_number);
-      printf("there's extra stuff\n");
+      //printf("there's extra stuff\n");
       return;
     }
 
     // file name too long
     if (strlen(name) > 5) {
       command_error(input_file_name, line_number);
-      printf("file name too long\n");
+      //printf("file name too long\n");
       return;
     }
 
     // too many arguments
     if (strtok_r(NULL, " ", &strtok_state) != NULL) {
       command_error(input_file_name, line_number);
-      printf("too many arguments for read file\n");
+      //printf("too many arguments for read file\n");
       return;
     }
 
@@ -250,13 +250,13 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     if (0 <= str_block_num && str_block_num <= INT_MAX) {
       block_num = str_block_num;
     } else {
-      fprintf(stderr, "block num exceeds size of int lol");
+      //fprintf(stderr, "block num exceeds size of int lol");
     }
 
     // unable to parse integer
     if (errno != 0 || block_num < 0) {
       command_error(input_file_name, line_number);
-      printf("cannot parse integer in write\n");
+      //printf("cannot parse integer in write\n");
       return;
     }
 
@@ -264,21 +264,21 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     // leftover characters after strtol
     if (*endptr != '\0') {
       command_error(input_file_name, line_number);
-      printf("there's extra stuff\n");
+      //printf("there's extra stuff\n");
       return;
     }
 
     // file name too long
     if (strlen(name) > 5) {
       command_error(input_file_name, line_number);
-      printf("file name too long\n");
+      //printf("file name too long\n");
       return;
     }
 
     // too many arguments
     if (strtok_r(NULL, " ", &strtok_state) != NULL) {
       command_error(input_file_name, line_number);
-      printf("too many arguments for write file\n");
+      //printf("too many arguments for write file\n");
       return;
     }
 
@@ -292,14 +292,19 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     char *buff_str;
     if ((buff_str = strtok_r(NULL, " ", &strtok_state)) == NULL) {
       command_error(input_file_name, line_number);
-      printf("data not provided for buffer\n");
+//      printf("data not provided for buffer\n");
       return;
     }
+
+    // undo what strtok did
+    strtok_state[-1] = ' ';
+//    depends on glibc implementation
+//    https://github.com/bminor/glibc/blob/5cb226d7e4e710939cff7288bf9970cb52ec0dfa/string/strtok_r.c#L73
 
     // file name too long
     if (strlen(buff_str) > 1024) {
       command_error(input_file_name, line_number);
-      printf("too much data provided for buffer\n");
+//      printf("too much data provided for buffer\n");
       return;
     }
 
@@ -329,7 +334,7 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     char *name;
     if ((name = strtok_r(NULL, " ", &strtok_state)) == NULL) {
       command_error(input_file_name, line_number);
-      printf("file name not provided for resize\n");
+      //printf("file name not provided for resize\n");
       return;
     }
 
@@ -337,7 +342,7 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     char *size_str;
     if ((size_str = strtok_r(NULL, " ", &strtok_state)) == NULL) {
       command_error(input_file_name, line_number);
-      printf("file size not provided for resize\n");
+      //printf("file size not provided for resize\n");
       return;
     }
 
@@ -348,7 +353,7 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     if (0 <= str_length && str_length <= INT_MAX) {
       size = str_length;
     } else {
-      fprintf(stderr, "file size exceeds size of int lol");
+      //fprintf(stderr, "file size exceeds size of int lol");
     }
 
     // unable to parse integer
@@ -362,21 +367,21 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     // leftover characters after strtol
     if (*endptr != '\0') {
       command_error(input_file_name, line_number);
-      printf("there's extra stuff\n");
+      //printf("there's extra stuff\n");
       return;
     }
 
     // file name too long
     if (strlen(name) > 5) {
       command_error(input_file_name, line_number);
-      printf("file name too long\n");
+      //printf("file name too long\n");
       return;
     }
 
     // too many arguments
     if (strtok_r(NULL, " ", &strtok_state) != NULL) {
       command_error(input_file_name, line_number);
-      printf("too many arguments for resize file\n");
+      //printf("too many arguments for resize file\n");
       return;
     }
 
@@ -389,7 +394,7 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     // too many arguments
     if (strtok_r(NULL, " ", &strtok_state) != NULL) {
       command_error(input_file_name, line_number);
-      printf("too many arguments for resize file\n");
+      //printf("too many arguments for resize file\n");
       return;
     }
 
@@ -403,20 +408,20 @@ void run_command(char *line, size_t line_number, const char *input_file_name) {
     char *name;
     if ((name = strtok_r(NULL, " ", &strtok_state)) == NULL) {
       command_error(input_file_name, line_number);
-      printf("file name not provided for delete\n");
+      //printf("file name not provided for delete\n");
       return;
     }
     // file name too long
     if (strlen(name) > 5) {
       command_error(input_file_name, line_number);
-      printf("file name too long\n");
+      //printf("file name too long\n");
       return;
     }
 
     // too many arguments
     if (strtok_r(NULL, " ", &strtok_state) != NULL) {
       command_error(input_file_name, line_number);
-      printf("too many arguments for delete file\n");
+      //printf("too many arguments for delete file\n");
       return;
     }
 
